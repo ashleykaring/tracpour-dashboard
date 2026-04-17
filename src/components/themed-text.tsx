@@ -4,7 +4,21 @@ import { Fonts, ThemeColor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export type ThemedTextProps = TextProps & {
-  type?: 'default' | 'title' | 'small' | 'smallBold' | 'subtitle' | 'link' | 'linkPrimary' | 'code';
+  type?:
+    | 'default'
+    | 'title'
+    | 'small'
+    | 'smallBold'
+    | 'subtitle'
+    | 'link'
+    | 'linkPrimary'
+    | 'code'
+    | 'eyebrow'
+    | 'screenTitle'
+    | 'sectionTitle'
+    | 'hero'
+    | 'statValue'
+    | 'dataPoint';
   themeColor?: ThemeColor;
 };
 
@@ -23,6 +37,12 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
         type === 'link' && styles.link,
         type === 'linkPrimary' && styles.linkPrimary,
         type === 'code' && styles.code,
+        type === 'eyebrow' && styles.eyebrow,
+        type === 'screenTitle' && styles.screenTitle,
+        type === 'sectionTitle' && styles.sectionTitle,
+        type === 'hero' && styles.hero,
+        type === 'statValue' && styles.statValue,
+        type === 'dataPoint' && styles.dataPoint,
         style,
       ]}
       {...rest}
@@ -69,5 +89,37 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.mono,
     fontWeight: Platform.select({ android: 700 }) ?? 500,
     fontSize: 12,
+  },
+  eyebrow: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: 700,
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
+  },
+  screenTitle: {
+    fontSize: 30,
+    lineHeight: 36,
+    fontWeight: 700,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    lineHeight: 26,
+    fontWeight: 700,
+  },
+  hero: {
+    fontSize: 44,
+    lineHeight: 48,
+    fontWeight: 700,
+  },
+  statValue: {
+    fontSize: 24,
+    lineHeight: 30,
+    fontWeight: 700,
+  },
+  dataPoint: {
+    fontSize: 18,
+    lineHeight: 24,
+    fontWeight: 700,
   },
 });

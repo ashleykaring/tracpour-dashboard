@@ -9,18 +9,32 @@ import { Platform } from 'react-native';
 
 export const Colors = {
   light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
+    text: '#11212D',
+    background: '#F4F1EA',
+    backgroundElement: '#FBFAF6',
+    backgroundSelected: '#E9E2D4',
+    textSecondary: '#5D6A73',
+    accent: '#C88635',
+    accentMuted: '#F0D9BD',
+    success: '#2E8B57',
+    successMuted: '#D6EADC',
+    progressTrack: '#E1D8C8',
+    cardBorder: '#E4DAC8',
+    shadow: '#61513C',
   },
   dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
+    text: '#F7F4EF',
+    background: '#141A1D',
+    backgroundElement: '#1B2429',
+    backgroundSelected: '#243138',
+    textSecondary: '#9EADB6',
+    accent: '#E2A257',
+    accentMuted: '#49311A',
+    success: '#6AD29A',
+    successMuted: '#183124',
+    progressTrack: '#2B363D',
+    cardBorder: '#2D3940',
+    shadow: '#000000',
   },
 } as const;
 
@@ -38,9 +52,9 @@ export const Fonts = Platform.select({
     mono: 'ui-monospace',
   },
   default: {
-    sans: 'normal',
+    sans: 'sans-serif',
     serif: 'serif',
-    rounded: 'normal',
+    rounded: 'sans-serif',
     mono: 'monospace',
   },
   web: {
@@ -58,7 +72,7 @@ export const Spacing = {
   three: 16,
   four: 24,
   five: 32,
-  six: 64,
+  six: 48,
 } as const;
 
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
