@@ -11,7 +11,6 @@ import { Screen } from '@/components/screen';
 import { SectionHeader } from '@/components/section-header';
 import { StatGrid } from '@/components/stat-grid';
 import { SurfaceCard } from '@/components/surface-card';
-import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { formatDateTime } from '@/lib/format';
 import { useDashboardData } from '@/hooks/use-dashboard-data';
@@ -84,11 +83,6 @@ export default function LiveScreen() {
               </View>
             )}
           </SurfaceCard>
-
-          <View style={styles.statusLine}>
-            <ThemedText type="smallBold">Status</ThemedText>
-            <ThemedText themeColor="textSecondary">Awaiting next truck.</ThemedText>
-          </View>
         </>
       )}
     </Screen>
@@ -98,9 +92,5 @@ export default function LiveScreen() {
 const styles = StyleSheet.create({
   list: {
     gap: Spacing.two,
-  },
-  statusLine: {
-    gap: Spacing.one,
-    marginTop: Spacing.one,
   },
 });

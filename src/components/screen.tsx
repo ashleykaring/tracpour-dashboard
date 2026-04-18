@@ -48,6 +48,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: MaxContentWidth,
     alignSelf: 'center',
+    minWidth: 0,
     paddingHorizontal: Spacing.three,
     paddingTop: Platform.select({ web: Spacing.five, default: Spacing.three }),
     gap: Spacing.three,

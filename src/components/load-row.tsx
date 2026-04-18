@@ -31,6 +31,7 @@ export function LoadRow({ load }: LoadRowProps) {
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: Spacing.three,
@@ -38,9 +39,11 @@ const styles = StyleSheet.create({
   },
   left: {
     flex: 1,
+    minWidth: 0,
     gap: Spacing.half,
   },
   right: {
+    minWidth: 88,
     alignItems: 'flex-end',
     gap: Spacing.one,
   },

@@ -33,12 +33,14 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     gap: Spacing.three,
   },
   copy: {
     flex: 1,
+    minWidth: 0,
     gap: Spacing.one,
   },
   subcopy: {

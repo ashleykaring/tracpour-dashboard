@@ -15,7 +15,7 @@ export function ProgressCard({ metrics }: ProgressCardProps) {
   return (
     <SurfaceCard style={styles.card}>
       <View style={styles.row}>
-        <View>
+        <View style={styles.copy}>
           <ThemedText type="smallBold">Pour Progress</ThemedText>
           <ThemedText themeColor="textSecondary">
             {`${metrics.totalPoured.toFixed(1)} of ${metrics.expectedYardage.toFixed(1)} yd`}
@@ -35,8 +35,13 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
     gap: Spacing.two,
+  },
+  copy: {
+    flex: 1,
+    minWidth: 0,
   },
 });

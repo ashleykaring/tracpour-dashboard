@@ -55,16 +55,19 @@ const styles = StyleSheet.create({
   },
   topRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     gap: Spacing.two,
   },
   copy: {
     flex: 1,
+    minWidth: 0,
     gap: Spacing.half,
   },
   bottomRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: Spacing.two,
@@ -77,5 +80,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#08121B',
+    flexShrink: 1,
   },
 });
