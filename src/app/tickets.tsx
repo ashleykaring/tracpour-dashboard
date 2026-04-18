@@ -30,7 +30,9 @@ export default function TicketsScreen() {
     <Screen scrollable>
       <View style={styles.header}>
         <ThemedText type="eyebrow">Tickets</ThemedText>
-        <ThemedText type="screenTitle">{job?.name ?? 'Active job'}</ThemedText>
+        <ThemedText type="screenTitle" style={styles.jobTitle}>
+          {job?.name ?? 'Active job'}
+        </ThemedText>
       </View>
 
       {isLoading ? (
@@ -77,6 +79,9 @@ export default function TicketsScreen() {
 const styles = StyleSheet.create({
   header: {
     gap: Spacing.two,
+  },
+  jobTitle: {
+    fontFamily: 'BarlowCondensed_700Bold',
   },
   ticketList: {
     gap: Spacing.two,

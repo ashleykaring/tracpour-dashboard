@@ -26,7 +26,9 @@ export default function HistoryScreen() {
     <Screen scrollable>
       <View style={styles.header}>
         <ThemedText type="eyebrow">Job Timeline</ThemedText>
-        <ThemedText type="screenTitle">{job?.name ?? 'Active job'}</ThemedText>
+        <ThemedText type="screenTitle" style={styles.jobTitle}>
+          {job?.name ?? 'Active job'}
+        </ThemedText>
       </View>
 
       <SurfaceCard>
@@ -55,7 +57,11 @@ const styles = StyleSheet.create({
   header: {
     gap: Spacing.two,
   },
+  jobTitle: {
+    fontFamily: 'BarlowCondensed_700Bold',
+  },
   timeline: {
     gap: Spacing.one,
+    marginTop: Spacing.two,
   },
 });

@@ -16,7 +16,7 @@ export function JobHeader({ job }: JobHeaderProps) {
       <View style={styles.row}>
         <View style={styles.copy}>
           <ThemedText type="eyebrow">Job</ThemedText>
-          <ThemedText type="screenTitle">
+          <ThemedText type="screenTitle" style={styles.jobTitle}>
             {job?.name ?? "Loading active job"}
           </ThemedText>
         </View>
@@ -41,5 +41,8 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
     gap: Spacing.one,
+  },
+  jobTitle: {
+    fontFamily: "BarlowCondensed_700Bold",
   },
 });

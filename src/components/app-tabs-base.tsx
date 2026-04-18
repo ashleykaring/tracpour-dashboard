@@ -22,22 +22,27 @@ export default function AppTabsBase({ children }: PropsWithChildren) {
         style={[
           styles.header,
           {
-            paddingTop: insets.top + Spacing.two,
-            backgroundColor: theme.background,
-            borderBottomColor: theme.cardBorder,
+            paddingTop: insets.top + Spacing.three,
+            backgroundColor: theme.navNavy,
+            borderBottomColor: theme.navBorder,
           },
         ]}>
         <View style={styles.navInner}>
           <ThemedText type="screenTitle" style={styles.title}>
-            TracPour
+            <ThemedText type="screenTitle" style={styles.titleTrack}>
+              Trac
+            </ThemedText>
+            <ThemedText type="screenTitle" style={[styles.titleTrack, { color: theme.brandBlue }]}>
+              Pour
+            </ThemedText>
           </ThemedText>
 
           <View
             style={[
               styles.tabBar,
               {
-                backgroundColor: theme.backgroundElement,
-                borderColor: theme.cardBorder,
+                backgroundColor: 'transparent',
+                borderColor: theme.navBorder,
               },
             ]}>
             <TabButton
@@ -79,10 +84,15 @@ function TabButton({ label, isFocused, onPress }: TabButtonProps) {
         style={[
           styles.tabButtonInner,
           {
-            backgroundColor: isFocused ? theme.backgroundSelected : 'transparent',
+            backgroundColor: isFocused ? theme.navSelected : 'transparent',
           },
         ]}>
-        <ThemedText type="smallBold" themeColor={isFocused ? 'text' : 'textSecondary'}>
+        <ThemedText
+          type="smallBold"
+          style={[
+            styles.tabLabel,
+            { color: isFocused ? theme.navText : theme.navMutedText },
+          ]}>
           {label}
         </ThemedText>
       </View>
@@ -112,6 +122,12 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: 'left',
+    fontFamily: 'BarlowCondensed_700Bold',
+    color: '#F5F7FA',
+  },
+  titleTrack: {
+    fontFamily: 'BarlowCondensed_700Bold',
+    color: '#F5F7FA',
   },
   tabBar: {
     flexDirection: 'row',
@@ -129,6 +145,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: Spacing.two,
+  },
+  tabLabel: {
+    fontFamily: 'Barlow_600SemiBold',
   },
   pressed: {
     opacity: 0.8,

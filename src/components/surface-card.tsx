@@ -33,9 +33,9 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: Spacing.three,
     borderWidth: 1,
-    shadowOpacity: 0.12,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 3,
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 2,
   },
 });
