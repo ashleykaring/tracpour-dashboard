@@ -52,7 +52,16 @@ export default function CreateJobScreen() {
         <View style={styles.header}>
           <ThemedText type="eyebrow">Start Job</ThemedText>
           <ThemedText type="screenTitle" style={styles.title}>
-            TracPour Setup
+            <ThemedText type="screenTitle" style={styles.titleTrack}>
+              Trac
+            </ThemedText>
+            <ThemedText
+              type="screenTitle"
+              style={[styles.titleTrack, { color: Colors.light.brandBlue }]}
+            >
+              Pour
+            </ThemedText>{" "}
+            Setup
           </ThemedText>
           <ThemedText themeColor="textSecondary">
             Create a new job to start tracking
@@ -116,6 +125,9 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   title: {
+    fontFamily: "BarlowCondensed_700Bold",
+  },
+  titleTrack: {
     fontFamily: "BarlowCondensed_700Bold",
   },
   card: {

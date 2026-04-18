@@ -1,9 +1,6 @@
 import type { CreateJobInput, Job, Load } from "./types";
 
-export const mockScenario = "active-demo" as
-  | "setup"
-  | "active-empty"
-  | "active-demo";
+export const mockScenario = "setup" as "setup" | "active-empty" | "active-demo";
 
 export const defaultJobTemplate: Job = {
   id: "job-001",
