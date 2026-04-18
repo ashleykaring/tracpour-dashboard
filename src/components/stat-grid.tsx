@@ -1,4 +1,4 @@
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { Spacing } from '@/constants/theme';
 
@@ -8,6 +8,7 @@ import { ThemedText } from './themed-text';
 type StatGridItem = {
   label: string;
   value: string;
+  span?: 'half' | 'full';
 };
 
 type StatGridProps = {
@@ -15,13 +16,12 @@ type StatGridProps = {
 };
 
 export function StatGrid({ items }: StatGridProps) {
-  const { width } = useWindowDimensions();
-  const isNarrow = width < 420;
-
   return (
     <View style={styles.grid}>
       {items.map((item) => (
-        <SurfaceCard key={item.label} style={[styles.item, isNarrow ? styles.itemFull : styles.itemHalf]}>
+        <SurfaceCard
+          key={item.label}
+          style={[styles.item, item.span === 'full' ? styles.itemFull : styles.itemHalf]}>
           <ThemedText themeColor="textSecondary" type="small">
             {item.label}
           </ThemedText>

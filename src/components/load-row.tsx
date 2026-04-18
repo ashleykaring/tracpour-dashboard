@@ -4,7 +4,6 @@ import { Spacing } from '@/constants/theme';
 import { formatDateTime } from '@/lib/format';
 import type { Load } from '@/lib/types';
 
-import { StatusPill } from './status-pill';
 import { ThemedText } from './themed-text';
 
 type LoadRowProps = {
@@ -22,7 +21,6 @@ export function LoadRow({ load }: LoadRowProps) {
       </View>
       <View style={styles.right}>
         <ThemedText type="dataPoint">{`${load.yardage.toFixed(1)} yd`}</ThemedText>
-        <StatusPill label={load.yardageSource} tone={load.yardageSource === 'actual' ? 'accent' : 'neutral'} />
       </View>
     </View>
   );

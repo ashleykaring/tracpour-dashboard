@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { Platform, ScrollView, StyleSheet, View, ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 type ScreenProps = {
@@ -16,7 +16,9 @@ export function Screen({ children, scrollable = false, style }: ScreenProps) {
 
   if (scrollable) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
+      <SafeAreaView
+        edges={['left', 'right', 'bottom']}
+        style={[styles.safeArea, { backgroundColor: theme.background }]}>
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={styles.scrollContent}
@@ -28,7 +30,9 @@ export function Screen({ children, scrollable = false, style }: ScreenProps) {
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
+    <SafeAreaView
+      edges={['left', 'right', 'bottom']}
+      style={[styles.safeArea, { backgroundColor: theme.background }]}>
       <View style={[styles.content, style]}>{children}</View>
     </SafeAreaView>
   );
@@ -42,7 +46,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: BottomTabInset + Spacing.four,
+    paddingBottom: Spacing.four,
   },
   content: {
     width: '100%',
@@ -50,7 +54,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     minWidth: 0,
     paddingHorizontal: Spacing.three,
-    paddingTop: Platform.select({ web: Spacing.five, default: Spacing.three }),
+    paddingTop: Platform.select({ web: Spacing.four, default: Spacing.two }),
     gap: Spacing.three,
   },
 });

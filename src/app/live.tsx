@@ -46,29 +46,20 @@ export default function LiveScreen() {
           <StatGrid
             items={[
               {
-                label: 'Expected Yardage',
-                value: `${job.expectedYardage.toFixed(1)} yd`,
-              },
-              {
                 label: 'Remaining Yardage',
                 value: `${metrics.remainingYardage.toFixed(1)} yd`,
+                span: 'half',
               },
               {
                 label: 'Completed Trucks',
                 value: `${metrics.completedTruckCount}`,
-              },
-              {
-                label: 'Last Load Time',
-                value: metrics.lastCompletedAt ? formatDateTime(metrics.lastCompletedAt) : 'Waiting',
+                span: 'half',
               },
             ]}
           />
 
           <SurfaceCard>
-            <SectionHeader
-              title="Recent Loads"
-              subtitle={metrics.completedTruckCount > 0 ? 'Most recent completed trucks.' : 'No recent activity yet.'}
-            />
+            <SectionHeader title="Recent Loads" />
 
             {recentLoads.length === 0 ? (
               <EmptyState
@@ -76,7 +67,7 @@ export default function LiveScreen() {
                 message="Completed loads will appear here automatically as they come in."
               />
             ) : (
-              <View style={styles.list}>
+              <View style={styles.recentLoadsList}>
                 {recentLoads.map((load) => (
                   <LoadRow key={load.id} load={load} />
                 ))}
@@ -90,7 +81,8 @@ export default function LiveScreen() {
 }
 
 const styles = StyleSheet.create({
-  list: {
+  recentLoadsList: {
     gap: Spacing.two,
+    marginTop: Spacing.one,
   },
 });
