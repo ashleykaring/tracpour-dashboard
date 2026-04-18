@@ -1,6 +1,11 @@
-import type { Job, Load } from "./types";
+import type { CreateJobInput, Job, Load } from "./types";
 
-export const mockJob: Job = {
+export const mockScenario = "active-demo" as
+  | "setup"
+  | "active-empty"
+  | "active-demo";
+
+export const defaultJobTemplate: Job = {
   id: "job-001",
   name: "Riverside Bridge",
   expectedYardage: 118,
@@ -105,3 +110,43 @@ export const mockLoads: Load[] = [
     truckLabel: "Truck 17",
   },
 ];
+
+let currentJob: Job | null = null;
+let currentLoads: Load[] = [];
+
+export function getMockActiveJob() {
+  if (currentJob) {
+    return currentJob;
+  }
+
+  if (mockScenario === "setup") {
+    return null;
+  }
+
+  return defaultJobTemplate;
+}
+
+export function getMockLoads() {
+  if (currentJob) {
+    return currentLoads;
+  }
+
+  if (mockScenario === "active-demo") {
+    return mockLoads;
+  }
+
+  return [];
+}
+
+export function createMockJob(input: CreateJobInput) {
+  currentJob = {
+    id: `job-${Date.now()}`,
+    name: input.name.trim(),
+    expectedYardage: input.expectedYardage,
+    status: "active",
+    startedAt: input.startedAt ?? new Date().toISOString(),
+  };
+  currentLoads = [];
+
+  return currentJob;
+}

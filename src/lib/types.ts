@@ -30,3 +30,9 @@ export type DashboardMetrics = {
   progressPercentage: number;
   lastCompletedAt: string | null;
 };
+
+export type CreateJobInput = {
+  name: string;
+  expectedYardage: number;
+  startedAt?: string;
+};

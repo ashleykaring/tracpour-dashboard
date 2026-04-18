@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.light.accent,
   },
   buttonText: {
-    color: '#08121B',
+    color: Colors.light.navText,
     flexShrink: 1,
   },
 });

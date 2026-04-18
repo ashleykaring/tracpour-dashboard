@@ -1,5 +1,5 @@
-import { mockJob, mockLoads } from './mock-data';
-import type { Job, Load } from './types';
+import { createMockJob, getMockActiveJob, getMockLoads } from './mock-data';
+import type { CreateJobInput, Job, Load } from './types';
 
 const MOCK_DELAY_MS = 350;
 
@@ -10,9 +10,13 @@ function delay<T>(value: T): Promise<T> {
 }
 
 export async function getActiveJob(): Promise<Job | null> {
-  return delay(mockJob);
+  return delay(getMockActiveJob());
 }
 
 export async function getLoadsForActiveJob(): Promise<Load[]> {
-  return delay(mockLoads);
+  return delay(getMockLoads());
+}
+
+export async function createJob(input: CreateJobInput): Promise<Job> {
+  return delay(createMockJob(input));
 }
