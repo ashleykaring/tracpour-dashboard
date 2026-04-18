@@ -25,15 +25,12 @@ export default function HistoryScreen() {
   return (
     <Screen scrollable>
       <View style={styles.header}>
-        <ThemedText type="eyebrow">Job History</ThemedText>
+        <ThemedText type="eyebrow">Job Timeline</ThemedText>
         <ThemedText type="screenTitle">{job?.name ?? 'Active job'}</ThemedText>
-        <ThemedText themeColor="textSecondary">
-          Completed load activity in a simple running timeline.
-        </ThemedText>
       </View>
 
       <SurfaceCard>
-        <SectionHeader title="Completed Loads" subtitle="Newest updates appear first." />
+        <SectionHeader title="Completed Loads" />
 
         {isLoading ? (
           <LoadingState label="Loading completed load history..." />

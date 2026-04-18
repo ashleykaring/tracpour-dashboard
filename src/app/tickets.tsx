@@ -31,9 +31,6 @@ export default function TicketsScreen() {
       <View style={styles.header}>
         <ThemedText type="eyebrow">Tickets</ThemedText>
         <ThemedText type="screenTitle">{job?.name ?? 'Active job'}</ThemedText>
-        <ThemedText themeColor="textSecondary">
-          Download ticket files when available and keep incomplete records visible.
-        </ThemedText>
       </View>
 
       {isLoading ? (
@@ -48,7 +45,7 @@ export default function TicketsScreen() {
                 message="Completed loads with ticket status will appear here."
               />
             ) : (
-              <View style={styles.list}>
+              <View style={styles.ticketList}>
                 {completedLoads.map((load) => (
                   <TicketRow key={load.id} load={load} />
                 ))}
@@ -64,7 +61,7 @@ export default function TicketsScreen() {
                 message="Loads missing a fully paired completed ticket state will show up here."
               />
             ) : (
-              <View style={styles.list}>
+              <View style={styles.ticketList}>
                 {incompleteLoads.map((load) => (
                   <TicketRow key={load.id} load={load} />
                 ))}
@@ -81,7 +78,8 @@ const styles = StyleSheet.create({
   header: {
     gap: Spacing.two,
   },
-  list: {
+  ticketList: {
     gap: Spacing.two,
+    marginTop: Spacing.one,
   },
 });
