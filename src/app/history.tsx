@@ -15,7 +15,7 @@ export default function HistoryScreen() {
   const { job, activity, isLoading } = useDashboardData();
 
   const activityEvents = useMemo(
-    () => [...activity].sort((left, right) => left.timestamp.localeCompare(right.timestamp)),
+    () => [...activity].sort((left, right) => right.timestamp.localeCompare(left.timestamp)),
     [activity]
   );
 
@@ -41,7 +41,12 @@ export default function HistoryScreen() {
         ) : (
           <View style={styles.timeline}>
             {activityEvents.map((event, index) => (
-              <TimelineItem key={event.id} event={event} isLast={index === activityEvents.length - 1} />
+              <TimelineItem
+                key={event.id}
+                event={event}
+                nextEvent={activityEvents[index + 1]}
+                isLast={index === activityEvents.length - 1}
+              />
             ))}
           </View>
         )}
