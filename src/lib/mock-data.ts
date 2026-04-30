@@ -1,6 +1,16 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import type { ActivityEvent, Job, Load, StartPourInput, TruckingTicket } from './types';
 
 export const mockScenario = 'setup' as 'setup' | 'active-empty' | 'active-demo';
+const MOCK_STATE_STORAGE_KEY = 'tracpour.mockState.v1';
+
+type MockState = {
+  currentJob: Job | null;
+  currentLoads: Load[];
+  currentActivity: ActivityEvent[];
+  currentTickets: TruckingTicket[];
+};
 
 export const defaultJobTemplate: Job = {
   id: 'job-001',
@@ -14,6 +24,54 @@ let currentJob: Job | null = null;
 let currentLoads: Load[] = [];
 let currentActivity: ActivityEvent[] = [];
 let currentTickets: TruckingTicket[] = [];
+let hasHydrated = false;
+let hydrationPromise: Promise<void> | null = null;
+
+function getCurrentState(): MockState {
+  return {
+    currentJob,
+    currentLoads,
+    currentActivity,
+    currentTickets,
+  };
+}
+
+function applyState(state: Partial<MockState>) {
+  currentJob = state.currentJob ?? null;
+  currentLoads = state.currentLoads ?? [];
+  currentActivity = state.currentActivity ?? [];
+  currentTickets = state.currentTickets ?? [];
+}
+
+async function hydrateMockState() {
+  if (hasHydrated) {
+    return;
+  }
+
+  hydrationPromise ??= (async () => {
+    try {
+      const storedState = await AsyncStorage.getItem(MOCK_STATE_STORAGE_KEY);
+
+      if (storedState) {
+        applyState(JSON.parse(storedState) as Partial<MockState>);
+      }
+    } catch (error) {
+      console.warn('Unable to load persisted mock pour state.', error);
+    } finally {
+      hasHydrated = true;
+    }
+  })();
+
+  await hydrationPromise;
+}
+
+async function saveMockState() {
+  try {
+    await AsyncStorage.setItem(MOCK_STATE_STORAGE_KEY, JSON.stringify(getCurrentState()));
+  } catch (error) {
+    console.warn('Unable to persist mock pour state.', error);
+  }
+}
 
 function addMinutes(value: string, minutes: number) {
   return new Date(new Date(value).getTime() + minutes * 60 * 1000).toISOString();
@@ -171,13 +229,16 @@ function createDemoJobFromTemplate() {
   currentTickets = buildMockTickets(defaultJobTemplate.id, defaultJobTemplate.startedAt);
 }
 
-export function getMockActivePour() {
+export async function getMockActivePour() {
+  await hydrateMockState();
+
   if (currentJob) {
     return currentJob;
   }
 
   if (mockScenario === 'active-demo') {
     createDemoJobFromTemplate();
+    await saveMockState();
     return currentJob;
   }
 
@@ -193,25 +254,34 @@ export function getMockActivePour() {
         timestamp: defaultJobTemplate.startedAt,
       },
     ];
+    await saveMockState();
     return currentJob;
   }
 
   return null;
 }
 
-export function getMockLoadsForActivePour() {
+export async function getMockLoadsForActivePour() {
+  await hydrateMockState();
+
   return currentJob ? currentLoads : [];
 }
 
-export function getMockPourActivity() {
+export async function getMockPourActivity() {
+  await hydrateMockState();
+
   return currentJob ? currentActivity : [];
 }
 
-export function getMockTicketsForActivePour() {
+export async function getMockTicketsForActivePour() {
+  await hydrateMockState();
+
   return currentJob ? currentTickets : [];
 }
 
-export function startMockPour(input: StartPourInput) {
+export async function startMockPour(input: StartPourInput) {
+  await hydrateMockState();
+
   const jobId = `job-${Date.now()}`;
   const startedAt = input.startedAt ?? new Date(Date.now() - 150 * 60 * 1000).toISOString();
 
@@ -225,6 +295,8 @@ export function startMockPour(input: StartPourInput) {
   currentLoads = buildMockLoads(jobId, startedAt);
   currentActivity = buildMockActivity(jobId, startedAt);
   currentTickets = buildMockTickets(jobId, startedAt);
+
+  await saveMockState();
 
   return currentJob;
 }

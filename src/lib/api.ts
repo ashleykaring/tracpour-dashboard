@@ -29,33 +29,33 @@ function delay<T>(value: T): Promise<T> {
 // process engine/truck events into app-friendly pour/load/activity records,
 // and later accept ticket-related data for download links.
 export async function getActivePour(): Promise<Job | null> {
-  return delay(getMockActivePour());
+  return delay(await getMockActivePour());
 }
 
 export async function startPour(input: StartPourInput): Promise<Job> {
-  return delay(startMockPour(input));
+  return delay(await startMockPour(input));
 }
 
 export async function getLoadsForActivePour(): Promise<Load[]> {
-  return delay(getMockLoadsForActivePour());
+  return delay(await getMockLoadsForActivePour());
 }
 
 export async function getPourActivity(): Promise<ActivityEvent[]> {
-  return delay(getMockPourActivity());
+  return delay(await getMockPourActivity());
 }
 
 export async function getTicketsForActivePour(): Promise<TruckingTicket[]> {
-  return delay(getMockTicketsForActivePour());
+  return delay(await getMockTicketsForActivePour());
 }
 
 export async function getDashboardSummary(): Promise<DashboardMetrics | null> {
-  const activePour = getMockActivePour();
+  const activePour = await getMockActivePour();
 
   if (!activePour) {
     return delay(null);
   }
 
-  return delay(computeDashboardMetrics(activePour, getMockLoadsForActivePour()));
+  return delay(computeDashboardMetrics(activePour, await getMockLoadsForActivePour()));
 }
 
 export const getActiveJob = getActivePour;

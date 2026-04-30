@@ -22,9 +22,11 @@ npx expo start
 
 - `src/hooks/use-dashboard-data.ts`: screen-facing hook for active pour, loads, activity, tickets, and derived dashboard metrics
 - `src/lib/api.ts`: central API interface and future backend integration point
-- `src/lib/mock-data.ts`: current in-memory mock pour/load/activity state
+- `src/lib/mock-data.ts`: current AsyncStorage-backed mock pour/load/activity/ticket state
 - `src/lib/types.ts`: domain types
 - `src/lib/dashboard.ts`: derived dashboard summary calculations
+
+Mock state is persisted locally only to keep the MVP usable across refreshes before the backend exists. The future backend/database should become the source of truth for active pours and related records.
 
 ## Backend Integration Later
 
