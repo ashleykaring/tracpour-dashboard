@@ -1,149 +1,234 @@
-import type { CreateJobInput, Job, Load } from "./types";
+import type { ActivityEvent, Job, Load, StartPourInput, TruckingTicket } from './types';
 
-export const mockScenario = "setup" as "setup" | "active-empty" | "active-demo";
+export const mockScenario = 'setup' as 'setup' | 'active-empty' | 'active-demo';
 
 export const defaultJobTemplate: Job = {
-  id: "job-001",
-  name: "Riverside Bridge",
+  id: 'job-001',
+  name: 'Riverside Bridge',
   expectedYardage: 118,
-  status: "active",
-  startedAt: "2026-04-17T06:15:00.000Z",
+  status: 'active',
+  startedAt: '2026-04-17T06:15:00.000Z',
 };
-
-export const mockLoads: Load[] = [
-  {
-    id: "load-001",
-    sequenceNumber: 1,
-    completedAt: "2026-04-17T13:10:00.000Z",
-    yardage: 9.5,
-    yardageSource: "default",
-    ticketDownloadUrl: "https://example.com/tickets/load-001.pdf",
-    status: "completed",
-    truckLabel: "Truck 14",
-  },
-  {
-    id: "load-002",
-    sequenceNumber: 2,
-    completedAt: "2026-04-17T13:32:00.000Z",
-    yardage: 9.8,
-    yardageSource: "actual",
-    ticketDownloadUrl: "https://example.com/tickets/load-002.pdf",
-    status: "completed",
-    truckLabel: "Truck 09",
-  },
-  {
-    id: "load-003",
-    sequenceNumber: 3,
-    completedAt: "2026-04-17T13:57:00.000Z",
-    yardage: 9.5,
-    yardageSource: "default",
-    status: "completed",
-    truckLabel: "Truck 22",
-  },
-  {
-    id: "load-004",
-    sequenceNumber: 4,
-    completedAt: "2026-04-17T14:18:00.000Z",
-    yardage: 10.1,
-    yardageSource: "actual",
-    ticketDownloadUrl: "https://example.com/tickets/load-004.pdf",
-    status: "completed",
-    truckLabel: "Truck 03",
-  },
-  {
-    id: "load-005",
-    sequenceNumber: 5,
-    completedAt: "2026-04-17T14:44:00.000Z",
-    yardage: 9.5,
-    yardageSource: "default",
-    ticketDownloadUrl: "https://example.com/tickets/load-005.pdf",
-    status: "completed",
-    truckLabel: "Truck 18",
-  },
-  {
-    id: "load-006",
-    sequenceNumber: 6,
-    completedAt: "2026-04-17T15:05:00.000Z",
-    yardage: 9.4,
-    yardageSource: "actual",
-    status: "completed",
-    truckLabel: "Truck 27",
-  },
-  {
-    id: "load-007",
-    sequenceNumber: 7,
-    completedAt: "2026-04-17T15:31:00.000Z",
-    yardage: 9.5,
-    yardageSource: "default",
-    ticketDownloadUrl: "https://example.com/tickets/load-007.pdf",
-    status: "completed",
-    truckLabel: "Truck 11",
-  },
-  {
-    id: "load-008",
-    sequenceNumber: 8,
-    completedAt: "2026-04-17T15:54:00.000Z",
-    yardage: 9.7,
-    yardageSource: "actual",
-    ticketDownloadUrl: "https://example.com/tickets/load-008.pdf",
-    status: "completed",
-    truckLabel: "Truck 05",
-  },
-  {
-    id: "load-009",
-    sequenceNumber: 9,
-    yardage: 9.5,
-    yardageSource: "default",
-    status: "incomplete",
-    truckLabel: "Truck 31",
-  },
-  {
-    id: "load-010",
-    sequenceNumber: 10,
-    yardage: 9.5,
-    yardageSource: "default",
-    ticketDownloadUrl: "https://example.com/tickets/load-010.pdf",
-    status: "incomplete",
-    truckLabel: "Truck 17",
-  },
-];
 
 let currentJob: Job | null = null;
 let currentLoads: Load[] = [];
+let currentActivity: ActivityEvent[] = [];
+let currentTickets: TruckingTicket[] = [];
 
-export function getMockActiveJob() {
+function addMinutes(value: string, minutes: number) {
+  return new Date(new Date(value).getTime() + minutes * 60 * 1000).toISOString();
+}
+
+function buildMockLoads(jobId: string, startedAt: string): Load[] {
+  return [
+    {
+      id: `${jobId}-load-001`,
+      jobId,
+      sequenceNumber: 1,
+      completedAt: addMinutes(startedAt, 18),
+      yardage: 9.5,
+      yardageSource: 'default',
+      status: 'completed',
+    },
+    {
+      id: `${jobId}-load-002`,
+      jobId,
+      sequenceNumber: 2,
+      completedAt: addMinutes(startedAt, 41),
+      yardage: 9.5,
+      yardageSource: 'default',
+      status: 'completed',
+    },
+    {
+      id: `${jobId}-load-003`,
+      jobId,
+      sequenceNumber: 3,
+      completedAt: addMinutes(startedAt, 63),
+      yardage: 9.5,
+      yardageSource: 'default',
+      status: 'completed',
+    },
+    {
+      id: `${jobId}-load-004`,
+      jobId,
+      sequenceNumber: 4,
+      completedAt: addMinutes(startedAt, 86),
+      yardage: 9.5,
+      yardageSource: 'default',
+      status: 'completed',
+    },
+    {
+      id: `${jobId}-load-005`,
+      jobId,
+      sequenceNumber: 5,
+      completedAt: addMinutes(startedAt, 112),
+      yardage: 9.5,
+      yardageSource: 'default',
+      status: 'completed',
+    },
+    {
+      id: `${jobId}-load-006`,
+      jobId,
+      sequenceNumber: 6,
+      completedAt: addMinutes(startedAt, 139),
+      yardage: 9.5,
+      yardageSource: 'default',
+      status: 'completed',
+    },
+    {
+      id: `${jobId}-load-007`,
+      jobId,
+      sequenceNumber: 7,
+      yardage: 9.5,
+      yardageSource: 'default',
+      status: 'incomplete',
+    },
+  ];
+}
+
+function buildMockTickets(jobId: string, startedAt: string): TruckingTicket[] {
+  return [
+    {
+      id: `${jobId}-ticket-001`,
+      jobId,
+      status: 'available',
+      truckLabel: 'Truck 14',
+      ticketNumber: 'TP-1042',
+      deliveredAt: addMinutes(startedAt, 22),
+      yardage: 9.5,
+      downloadUrl: 'https://example.com/tickets/tp-1042.pdf',
+    },
+    {
+      id: `${jobId}-ticket-002`,
+      jobId,
+      status: 'available',
+      truckLabel: 'Truck 09',
+      ticketNumber: 'TP-1043',
+      deliveredAt: addMinutes(startedAt, 47),
+      yardage: 9.8,
+      downloadUrl: 'https://example.com/tickets/tp-1043.pdf',
+    },
+    {
+      id: `${jobId}-ticket-003`,
+      jobId,
+      status: 'pending',
+      truckLabel: 'Truck 22',
+      deliveredAt: addMinutes(startedAt, 68),
+      yardage: 9.5,
+    },
+    {
+      id: `${jobId}-ticket-004`,
+      jobId,
+      status: 'available',
+      truckLabel: 'Truck 03',
+      ticketNumber: 'TP-1045',
+      deliveredAt: addMinutes(startedAt, 91),
+      yardage: 10.1,
+      downloadUrl: 'https://example.com/tickets/tp-1045.pdf',
+    },
+  ];
+}
+
+function buildMockActivity(jobId: string, startedAt: string): ActivityEvent[] {
+  return [
+    {
+      id: `${jobId}-activity-001`,
+      jobId,
+      type: 'engine_start',
+      timestamp: addMinutes(startedAt, 0),
+    },
+    {
+      id: `${jobId}-activity-002`,
+      jobId,
+      type: 'engine_stop',
+      timestamp: addMinutes(startedAt, 44),
+    },
+    {
+      id: `${jobId}-activity-003`,
+      jobId,
+      type: 'engine_start',
+      timestamp: addMinutes(startedAt, 58),
+    },
+    {
+      id: `${jobId}-activity-004`,
+      jobId,
+      type: 'engine_stop',
+      timestamp: addMinutes(startedAt, 116),
+    },
+    {
+      id: `${jobId}-activity-005`,
+      jobId,
+      type: 'engine_start',
+      timestamp: addMinutes(startedAt, 128),
+    },
+  ];
+}
+
+function createDemoJobFromTemplate() {
+  currentJob = defaultJobTemplate;
+  currentLoads = buildMockLoads(defaultJobTemplate.id, defaultJobTemplate.startedAt);
+  currentActivity = buildMockActivity(defaultJobTemplate.id, defaultJobTemplate.startedAt);
+  currentTickets = buildMockTickets(defaultJobTemplate.id, defaultJobTemplate.startedAt);
+}
+
+export function getMockActivePour() {
   if (currentJob) {
     return currentJob;
   }
 
-  if (mockScenario === "setup") {
-    return null;
+  if (mockScenario === 'active-demo') {
+    createDemoJobFromTemplate();
+    return currentJob;
   }
 
-  return defaultJobTemplate;
+  if (mockScenario === 'active-empty') {
+    currentJob = defaultJobTemplate;
+    currentLoads = [];
+    currentTickets = [];
+    currentActivity = [
+      {
+        id: `${defaultJobTemplate.id}-activity-001`,
+        jobId: defaultJobTemplate.id,
+        type: 'engine_start',
+        timestamp: defaultJobTemplate.startedAt,
+      },
+    ];
+    return currentJob;
+  }
+
+  return null;
 }
 
-export function getMockLoads() {
-  if (currentJob) {
-    return currentLoads;
-  }
-
-  if (mockScenario === "active-demo") {
-    return mockLoads;
-  }
-
-  return [];
+export function getMockLoadsForActivePour() {
+  return currentJob ? currentLoads : [];
 }
 
-export function createMockJob(input: CreateJobInput) {
+export function getMockPourActivity() {
+  return currentJob ? currentActivity : [];
+}
+
+export function getMockTicketsForActivePour() {
+  return currentJob ? currentTickets : [];
+}
+
+export function startMockPour(input: StartPourInput) {
+  const jobId = `job-${Date.now()}`;
+  const startedAt = input.startedAt ?? new Date(Date.now() - 150 * 60 * 1000).toISOString();
+
   currentJob = {
-    id: `job-${Date.now()}`,
+    id: jobId,
     name: input.name.trim(),
     expectedYardage: input.expectedYardage,
-    status: "active",
-    startedAt: input.startedAt ?? new Date().toISOString(),
+    status: 'active',
+    startedAt,
   };
-  currentLoads = [];
+  currentLoads = buildMockLoads(jobId, startedAt);
+  currentActivity = buildMockActivity(jobId, startedAt);
+  currentTickets = buildMockTickets(jobId, startedAt);
 
   return currentJob;
 }
+
+export const getMockActiveJob = getMockActivePour;
+export const getMockLoads = getMockLoadsForActivePour;
+export const createMockJob = startMockPour;

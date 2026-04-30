@@ -12,18 +12,22 @@ import { Spacing } from '@/constants/theme';
 import { useDashboardData } from '@/hooks/use-dashboard-data';
 
 export default function TicketsScreen() {
-  const { job, isLoading, loads } = useDashboardData();
+  const { job, isLoading, tickets } = useDashboardData();
 
-  const completedLoads = useMemo(
+  const sortedTickets = useMemo(
     () =>
-      [...loads]
-        .filter((load) => load.status === 'completed')
-        .sort((left, right) => (right.completedAt ?? '').localeCompare(left.completedAt ?? '')),
-    [loads]
+      [...tickets].sort((left, right) => {
+        if (left.deliveredAt && right.deliveredAt) {
+          return right.deliveredAt.localeCompare(left.deliveredAt);
+        }
+
+        return left.id.localeCompare(right.id);
+      }),
+    [tickets]
   );
-  const incompleteLoads = useMemo(
-    () => [...loads].filter((load) => load.status === 'incomplete'),
-    [loads]
+  const availableTicketCount = useMemo(
+    () => sortedTickets.filter((ticket) => ticket.downloadUrl).length,
+    [sortedTickets]
   );
 
   return (
@@ -31,7 +35,7 @@ export default function TicketsScreen() {
       <View style={styles.header}>
         <ThemedText type="eyebrow">Tickets</ThemedText>
         <ThemedText type="screenTitle" style={styles.jobTitle}>
-          {job?.name ?? 'Active job'}
+          {job?.name ?? 'Active pour'}
         </ThemedText>
       </View>
 
@@ -40,32 +44,16 @@ export default function TicketsScreen() {
       ) : (
         <>
           <SurfaceCard>
-            <SectionHeader title="Completed" subtitle={`${completedLoads.length} load records`} />
-            {completedLoads.length === 0 ? (
+            <SectionHeader title="Ticket Links" subtitle={`${availableTicketCount} available`} />
+            {sortedTickets.length === 0 ? (
               <EmptyState
-                title="No completed tickets"
-                message="Completed loads with ticket status will appear here."
+                title="No ticket links yet"
+                message="Ticket download links will appear here as trucking tickets are added."
               />
             ) : (
               <View style={styles.ticketList}>
-                {completedLoads.map((load) => (
-                  <TicketRow key={load.id} load={load} />
-                ))}
-              </View>
-            )}
-          </SurfaceCard>
-
-          <SurfaceCard>
-            <SectionHeader title="Incomplete" subtitle={`${incompleteLoads.length} load records`} />
-            {incompleteLoads.length === 0 ? (
-              <EmptyState
-                title="No incomplete records"
-                message="Loads missing a fully paired completed ticket state will show up here."
-              />
-            ) : (
-              <View style={styles.ticketList}>
-                {incompleteLoads.map((load) => (
-                  <TicketRow key={load.id} load={load} />
+                {sortedTickets.map((ticket) => (
+                  <TicketRow key={ticket.id} ticket={ticket} />
                 ))}
               </View>
             )}

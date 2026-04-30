@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { getActiveJob, getLoadsForActiveJob } from '@/lib/api';
+import { getActivePour, getLoadsForActivePour, getPourActivity, getTicketsForActivePour } from '@/lib/api';
 import { computeDashboardMetrics } from '@/lib/dashboard';
-import type { Job, Load } from '@/lib/types';
+import type { ActivityEvent, Job, Load, TruckingTicket } from '@/lib/types';
 
 export function useDashboardData() {
   const [job, setJob] = useState<Job | null>(null);
   const [loads, setLoads] = useState<Load[]>([]);
+  const [activity, setActivity] = useState<ActivityEvent[]>([]);
+  const [tickets, setTickets] = useState<TruckingTicket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -15,7 +17,12 @@ export function useDashboardData() {
     async function loadDashboard() {
       setIsLoading(true);
 
-      const [activeJob, activeLoads] = await Promise.all([getActiveJob(), getLoadsForActiveJob()]);
+      const [activeJob, activeLoads, pourActivity, truckingTickets] = await Promise.all([
+        getActivePour(),
+        getLoadsForActivePour(),
+        getPourActivity(),
+        getTicketsForActivePour(),
+      ]);
 
       if (!isMounted) {
         return;
@@ -23,6 +30,8 @@ export function useDashboardData() {
 
       setJob(activeJob);
       setLoads(activeLoads);
+      setActivity(pourActivity);
+      setTickets(truckingTickets);
       setIsLoading(false);
     }
 
@@ -41,5 +50,5 @@ export function useDashboardData() {
     return computeDashboardMetrics(job, loads);
   }, [job, loads]);
 
-  return { job, loads, metrics, isLoading };
+  return { job, loads, activity, tickets, metrics, isLoading };
 }

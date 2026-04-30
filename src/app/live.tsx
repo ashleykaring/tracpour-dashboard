@@ -23,9 +23,20 @@ export default function LiveScreen() {
       [...loads]
         .filter((load) => load.status === 'completed' && load.completedAt)
         .sort((left, right) => (right.completedAt ?? '').localeCompare(left.completedAt ?? ''))
-        .slice(0, 4),
+        .slice(0, 5),
     [loads]
   );
+
+  if (!isLoading && !job) {
+    return (
+      <Screen scrollable>
+        <EmptyState
+          title="No active pour"
+          message="Start a pour to begin tracking yardage and truck activity."
+        />
+      </Screen>
+    );
+  }
 
   return (
     <Screen scrollable>
@@ -37,7 +48,7 @@ export default function LiveScreen() {
         <>
           <MetricCard
             label="Total Poured"
-            value={`${metrics.totalPoured.toFixed(1)} yd`}
+            value={`${metrics.totalPoured.toFixed(1)} CY`}
             helper={`Last completed load ${metrics.lastCompletedAt ? formatDateTime(metrics.lastCompletedAt) : 'not available yet'}`}
           />
 
@@ -46,8 +57,13 @@ export default function LiveScreen() {
           <StatGrid
             items={[
               {
+                label: 'Expected Yardage',
+                value: `${metrics.expectedYardage.toFixed(1)} CY`,
+                span: 'full',
+              },
+              {
                 label: 'Remaining Yardage',
-                value: `${metrics.remainingYardage.toFixed(1)} yd`,
+                value: `${metrics.remainingYardage.toFixed(1)} CY`,
                 span: 'half',
               },
               {

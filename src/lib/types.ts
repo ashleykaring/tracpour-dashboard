@@ -1,6 +1,8 @@
-export type JobStatus = 'active' | 'paused' | 'complete';
+export type JobStatus = 'active' | 'completed';
 export type YardageSource = 'default' | 'actual';
 export type LoadStatus = 'completed' | 'incomplete';
+export type ActivityEventType = 'engine_start' | 'engine_stop';
+export type TruckingTicketStatus = 'available' | 'pending';
 
 export type Job = {
   id: string;
@@ -13,13 +15,30 @@ export type Job = {
 
 export type Load = {
   id: string;
+  jobId: string;
   sequenceNumber: number;
   completedAt?: string;
   yardage: number;
   yardageSource: YardageSource;
-  ticketDownloadUrl?: string;
   status: LoadStatus;
+};
+
+export type ActivityEvent = {
+  id: string;
+  jobId: string;
+  type: ActivityEventType;
+  timestamp: string;
+};
+
+export type TruckingTicket = {
+  id: string;
+  jobId: string;
+  status: TruckingTicketStatus;
   truckLabel?: string;
+  ticketNumber?: string;
+  deliveredAt?: string;
+  yardage?: number;
+  downloadUrl?: string;
 };
 
 export type DashboardMetrics = {
@@ -31,8 +50,10 @@ export type DashboardMetrics = {
   lastCompletedAt: string | null;
 };
 
-export type CreateJobInput = {
+export type StartPourInput = {
   name: string;
   expectedYardage: number;
   startedAt?: string;
 };
+
+export type CreateJobInput = StartPourInput;

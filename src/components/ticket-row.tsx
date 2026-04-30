@@ -2,37 +2,38 @@ import { Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import { Colors, Spacing } from '@/constants/theme';
 import { formatDateTime } from '@/lib/format';
-import type { Load } from '@/lib/types';
+import type { TruckingTicket } from '@/lib/types';
 
 import { StatusPill } from './status-pill';
 import { ThemedText } from './themed-text';
 
 type TicketRowProps = {
-  load: Load;
+  ticket: TruckingTicket;
 };
 
-export function TicketRow({ load }: TicketRowProps) {
-  const canDownload = Boolean(load.ticketDownloadUrl);
+export function TicketRow({ ticket }: TicketRowProps) {
+  const canDownload = Boolean(ticket.downloadUrl);
+  const displayLabel = ticket.truckLabel ?? ticket.ticketNumber ?? 'Ticket pending';
+  const statusLabel = ticket.status === 'available' ? 'available' : 'pending';
 
   return (
     <View style={styles.row}>
       <View style={styles.topRow}>
         <View style={styles.copy}>
-          <ThemedText type="smallBold">{load.truckLabel ?? `Load ${load.sequenceNumber}`}</ThemedText>
+          <ThemedText type="smallBold">{displayLabel}</ThemedText>
           <ThemedText themeColor="textSecondary">
-            {load.completedAt ? formatDateTime(load.completedAt) : 'Time pending'}
+            {ticket.deliveredAt ? formatDateTime(ticket.deliveredAt) : 'Delivery time pending'}
           </ThemedText>
         </View>
-        <StatusPill
-          label={load.status}
-          tone={load.status === 'completed' ? 'success' : 'neutral'}
-        />
+        <StatusPill label={statusLabel} tone={ticket.status === 'available' ? 'success' : 'neutral'} />
       </View>
 
       <View style={styles.bottomRow}>
-        <ThemedText type="dataPoint">{`${load.yardage.toFixed(1)} yd`}</ThemedText>
+        <ThemedText type="dataPoint">
+          {typeof ticket.yardage === 'number' ? `${ticket.yardage.toFixed(1)} CY` : 'Yardage pending'}
+        </ThemedText>
         {canDownload ? (
-          <Pressable onPress={() => Linking.openURL(load.ticketDownloadUrl!)} style={styles.button}>
+          <Pressable onPress={() => Linking.openURL(ticket.downloadUrl!)} style={styles.button}>
             <ThemedText type="smallBold" style={styles.buttonText}>
               Download Ticket
             </ThemedText>

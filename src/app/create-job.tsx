@@ -6,7 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { SurfaceCard } from "@/components/surface-card";
 import { ThemedText } from "@/components/themed-text";
 import { Colors, Spacing } from "@/constants/theme";
-import { createJob } from "@/lib/api";
+import { startPour } from "@/lib/api";
 import { defaultJobTemplate } from "@/lib/mock-data";
 
 export default function CreateJobScreen() {
@@ -38,7 +38,7 @@ export default function CreateJobScreen() {
 
     setIsSaving(true);
 
-    await createJob({
+    await startPour({
       name: trimmedName,
       expectedYardage: parsedYardage,
     });
@@ -50,7 +50,7 @@ export default function CreateJobScreen() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.content}>
         <View style={styles.header}>
-          <ThemedText type="eyebrow">Start Job</ThemedText>
+          <ThemedText type="eyebrow">Start Pour</ThemedText>
           <ThemedText type="screenTitle" style={styles.title}>
             <ThemedText type="screenTitle" style={styles.titleTrack}>
               Trac
@@ -64,13 +64,13 @@ export default function CreateJobScreen() {
             Setup
           </ThemedText>
           <ThemedText themeColor="textSecondary">
-            Create a new job to start tracking
+            Enter the pour details to begin tracking yardage.
           </ThemedText>
         </View>
 
         <SurfaceCard style={styles.card}>
           <View style={styles.fieldGroup}>
-            <ThemedText type="smallBold">Job Name</ThemedText>
+            <ThemedText type="smallBold">Job / Pour Name</ThemedText>
             <TextInput
               value={jobName}
               onChangeText={setJobName}
@@ -94,10 +94,15 @@ export default function CreateJobScreen() {
 
           <Pressable
             onPress={() => void handleStartJob()}
-            style={styles.button}
+            disabled={isSaving}
+            style={({ pressed }) => [
+              styles.button,
+              pressed && styles.buttonPressed,
+              isSaving && styles.buttonDisabled,
+            ]}
           >
             <ThemedText type="smallBold" style={styles.buttonText}>
-              {isSaving ? "Starting Job..." : "Start Job"}
+              {isSaving ? "Starting Pour..." : "Start Pour"}
             </ThemedText>
           </Pressable>
         </SurfaceCard>
@@ -153,6 +158,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: Colors.light.navNavy,
+  },
+  buttonPressed: {
+    opacity: 0.84,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
   },
   buttonText: {
     color: Colors.light.navText,

@@ -12,39 +12,36 @@ import { Spacing } from '@/constants/theme';
 import { useDashboardData } from '@/hooks/use-dashboard-data';
 
 export default function HistoryScreen() {
-  const { job, loads, isLoading } = useDashboardData();
+  const { job, activity, isLoading } = useDashboardData();
 
-  const completedLoads = useMemo(
-    () =>
-      [...loads]
-        .filter((load) => load.status === 'completed' && load.completedAt)
-        .sort((left, right) => (right.completedAt ?? '').localeCompare(left.completedAt ?? '')),
-    [loads]
+  const activityEvents = useMemo(
+    () => [...activity].sort((left, right) => left.timestamp.localeCompare(right.timestamp)),
+    [activity]
   );
 
   return (
     <Screen scrollable>
       <View style={styles.header}>
-        <ThemedText type="eyebrow">Job Timeline</ThemedText>
+        <ThemedText type="eyebrow">Pour Timeline</ThemedText>
         <ThemedText type="screenTitle" style={styles.jobTitle}>
-          {job?.name ?? 'Active job'}
+          {job?.name ?? 'Active pour'}
         </ThemedText>
       </View>
 
       <SurfaceCard>
-        <SectionHeader title="Completed Loads" />
+        <SectionHeader title="Pour Activity" subtitle={`${activityEvents.length} engine events`} />
 
         {isLoading ? (
-          <LoadingState label="Loading completed load history..." />
-        ) : completedLoads.length === 0 ? (
+          <LoadingState label="Loading pour activity..." />
+        ) : activityEvents.length === 0 ? (
           <EmptyState
-            title="No completed loads yet"
-            message="Completed truck activity will appear here as load events arrive."
+            title="No activity yet"
+            message="Engine start and stop activity will appear here as events are processed."
           />
         ) : (
           <View style={styles.timeline}>
-            {completedLoads.map((load, index) => (
-              <TimelineItem key={load.id} load={load} isLast={index === completedLoads.length - 1} />
+            {activityEvents.map((event, index) => (
+              <TimelineItem key={event.id} event={event} isLast={index === activityEvents.length - 1} />
             ))}
           </View>
         )}

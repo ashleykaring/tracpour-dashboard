@@ -14,13 +14,13 @@ export function LoadRow({ load }: LoadRowProps) {
   return (
     <View style={styles.row}>
       <View style={styles.left}>
-        <ThemedText type="smallBold">{load.truckLabel ?? `Load ${load.sequenceNumber}`}</ThemedText>
+        <ThemedText type="smallBold">{`Load ${load.sequenceNumber}`}</ThemedText>
         <ThemedText themeColor="textSecondary">
           {load.completedAt ? formatDateTime(load.completedAt) : 'Waiting for completion'}
         </ThemedText>
       </View>
       <View style={styles.right}>
-        <ThemedText type="dataPoint">{`${load.yardage.toFixed(1)} yd`}</ThemedText>
+        <ThemedText type="dataPoint">{`${load.yardage.toFixed(1)} CY`}</ThemedText>
       </View>
     </View>
   );

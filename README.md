@@ -1,6 +1,6 @@
 ## TracPour Dashboard MVP
 
-Simple Expo Router mobile dashboard for one active concrete job at a time. The app currently runs entirely on typed mock data and is structured so the data layer can be replaced later without rewriting screen components.
+Managed Expo / React Native mobile MVP for tracking one active concrete pour at a time. The app currently runs on typed mock data, with `src/lib/api.ts` kept as the frontend boundary that can later switch to backend API calls.
 
 ## Run
 
@@ -9,23 +9,32 @@ npm install
 npx expo start
 ```
 
-## Structure
+## App Flow
 
-- `src/app/live.tsx`: live yardage dashboard
-- `src/app/tickets.tsx`: completed and incomplete ticket lists
-- `src/app/history.tsx`: chronological completed load timeline
+- If no active pour exists, `src/app/index.tsx` routes to `src/app/create-job.tsx`.
+- Starting a pour creates the active job in the mock API, seeds representative load, activity, and ticket records, and routes to `/live`.
+- Active pour tabs:
+  - `src/app/live.tsx`: yardage progress dashboard
+  - `src/app/tickets.tsx`: simple ticket download link list
+  - `src/app/history.tsx`: engine start/stop activity timeline
+
+## Data Layer
+
+- `src/hooks/use-dashboard-data.ts`: screen-facing hook for active pour, loads, activity, tickets, and derived dashboard metrics
+- `src/lib/api.ts`: central API interface and future backend integration point
+- `src/lib/mock-data.ts`: current in-memory mock pour/load/activity state
 - `src/lib/types.ts`: domain types
-- `src/lib/api.ts`: data access abstraction used by screens
-- `src/lib/mock-data.ts`: current local mock job and load records
-- `src/lib/supabase.ts`: placeholder backend client entry point
+- `src/lib/dashboard.ts`: derived dashboard summary calculations
 
-## Swapping Mock Data For A Backend
+## Backend Integration Later
 
-Keep screen components unchanged and replace the implementation inside `src/lib/api.ts`.
+Do not put raw TCP handling in the mobile app. The future backend/service layer should receive raw TCP events on port 5002, process them into app-friendly pour, load, and activity records, then expose those records through API endpoints consumed from `src/lib/api.ts`. Trucking ticket records can arrive through a separate backend/API ingestion path and do not need to be linked to loads until there is a reliable matching rule.
 
-Current functions to preserve:
+Likely API-facing methods already represented in the frontend:
 
-- `getActiveJob()`
-- `getLoadsForActiveJob()`
-
-Later, wire your backend client in `src/lib/supabase.ts` and move `mockJob` / `mockLoads` queries to real fetches. That keeps routing, presentation components, and derived dashboard metrics isolated from the storage layer.
+- `getActivePour()`
+- `startPour()`
+- `getLoadsForActivePour()`
+- `getPourActivity()`
+- `getTicketsForActivePour()`
+- `getDashboardSummary()`

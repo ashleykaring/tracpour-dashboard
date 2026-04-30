@@ -3,7 +3,7 @@ import { Redirect } from 'expo-router';
 
 import { LoadingState } from '@/components/loading-state';
 import { Screen } from '@/components/screen';
-import { getActiveJob } from '@/lib/api';
+import { getActivePour } from '@/lib/api';
 
 export default function IndexScreen() {
   const [target, setTarget] = useState<'/live' | '/create-job' | null>(null);
@@ -12,7 +12,7 @@ export default function IndexScreen() {
     let isMounted = true;
 
     async function resolveTarget() {
-      const activeJob = await getActiveJob();
+      const activeJob = await getActivePour();
 
       if (!isMounted) {
         return;

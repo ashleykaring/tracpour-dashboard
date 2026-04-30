@@ -18,7 +18,7 @@ export function ProgressCard({ metrics }: ProgressCardProps) {
         <View style={styles.copy}>
           <ThemedText type="smallBold">Pour Progress</ThemedText>
           <ThemedText themeColor="textSecondary">
-            {`${metrics.totalPoured.toFixed(1)} of ${metrics.expectedYardage.toFixed(1)} yd`}
+            {`${metrics.totalPoured.toFixed(1)} of ${metrics.expectedYardage.toFixed(1)} CY`}
           </ThemedText>
         </View>
         <ThemedText type="dataPoint">{`${Math.round(metrics.progressPercentage)}%`}</ThemedText>

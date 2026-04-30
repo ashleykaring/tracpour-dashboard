@@ -15,12 +15,12 @@ export function JobHeader({ job }: JobHeaderProps) {
     <View style={styles.container}>
       <View style={styles.row}>
         <View style={styles.copy}>
-          <ThemedText type="eyebrow">Job</ThemedText>
+          <ThemedText type="eyebrow">Active Pour</ThemedText>
           <ThemedText type="screenTitle" style={styles.jobTitle}>
-            {job?.name ?? "Loading active job"}
+            {job?.name ?? "Loading active pour"}
           </ThemedText>
         </View>
-        <StatusPill label={job?.status ?? "active"} />
+        <StatusPill label={job?.status === "completed" ? "Completed" : "Active"} />
       </View>
     </View>
   );
