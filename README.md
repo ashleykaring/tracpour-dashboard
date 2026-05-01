@@ -30,7 +30,7 @@ Mock state is persisted locally only to keep the MVP usable across refreshes bef
 
 ## Backend Integration Later
 
-Do not put raw TCP handling in the mobile app. The future backend/service layer should receive raw TCP events on port 5002, process them into app-friendly pour, load, and activity records, then expose those records through API endpoints consumed from `src/lib/api.ts`. Trucking ticket records can arrive through a separate backend/API ingestion path and do not need to be linked to loads until there is a reliable matching rule.
+Do not put raw event handling in the mobile app. The backend service receives HTTP event ingestion from the Raspberry Pi or a local bridge service, processes events into app-friendly pour, load, and activity records, then exposes those records through API endpoints consumed from `src/lib/api.ts`. Trucking ticket records can arrive through a separate backend/API ingestion path and do not need to be linked to loads until there is a reliable matching rule.
 
 Likely API-facing methods already represented in the frontend:
 
@@ -40,3 +40,18 @@ Likely API-facing methods already represented in the frontend:
 - `getPourActivity()`
 - `getTicketsForActivePour()`
 - `getDashboardSummary()`
+
+## Backend
+
+The backend lives in `backend/` as a separate Node/Fastify service with Supabase Postgres persistence.
+
+Local setup:
+
+```bash
+cd backend
+cp .env.example .env
+npm install
+npm run dev
+```
+
+Before running it, create a Supabase project and run `backend/supabase/schema.sql` in the Supabase SQL editor. Vercel can continue deploying the Expo frontend from the repo root. Railway can deploy the backend from the `backend/` root directory.
