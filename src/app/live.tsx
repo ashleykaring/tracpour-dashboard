@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
-import { useMemo } from 'react';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Alert, Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import { EmptyState } from '@/components/empty-state';
 import { JobHeader } from '@/components/job-header';
@@ -20,6 +20,7 @@ import { completeActivePour } from '@/lib/api';
 
 export default function LiveScreen() {
   const { job, isLoading, metrics, loads } = useDashboardData();
+  const [isEndingPour, setIsEndingPour] = useState(false);
 
   const recentLoads = useMemo(
     () =>
@@ -54,7 +55,35 @@ export default function LiveScreen() {
     );
   }
 
+  async function endPour() {
+    if (isEndingPour) {
+      return;
+    }
+
+    setIsEndingPour(true);
+
+    try {
+      await completeActivePour();
+      router.replace('/create-job');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to end pour.';
+      Alert.alert('Could not end pour', message);
+    } finally {
+      setIsEndingPour(false);
+    }
+  }
+
   function handleEndPour() {
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('End this pour and return to setup?');
+
+      if (confirmed) {
+        void endPour();
+      }
+
+      return;
+    }
+
     Alert.alert('End pour?', 'This will complete the active pour and return to setup.', [
       {
         text: 'Cancel',
@@ -64,9 +93,7 @@ export default function LiveScreen() {
         text: 'End Pour',
         style: 'destructive',
         onPress: () => {
-          void completeActivePour().then(() => {
-            router.replace('/create-job');
-          });
+          void endPour();
         },
       },
     ]);
@@ -125,8 +152,17 @@ export default function LiveScreen() {
             )}
           </SurfaceCard>
 
-          <Pressable onPress={handleEndPour} style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed]}>
-            <ThemedButtonText color={Colors.light.accent}>End Pour</ThemedButtonText>
+          <Pressable
+            onPress={handleEndPour}
+            disabled={isEndingPour}
+            style={({ pressed }) => [
+              styles.secondaryButton,
+              pressed && styles.pressed,
+              isEndingPour && styles.disabled,
+            ]}>
+            <ThemedButtonText color="#B42318">
+              {isEndingPour ? 'Ending Pour...' : 'End Pour'}
+            </ThemedButtonText>
           </Pressable>
         </>
       )}
@@ -161,10 +197,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: Colors.light.cardBorder,
-    backgroundColor: Colors.light.backgroundElement,
+    borderColor: '#FECACA',
+    backgroundColor: '#FEE2E2',
   },
   pressed: {
     opacity: 0.82,
+  },
+  disabled: {
+    opacity: 0.6,
   },
 });

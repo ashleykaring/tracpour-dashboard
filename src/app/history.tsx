@@ -15,7 +15,7 @@ export default function HistoryScreen() {
   const { job, activity, isLoading } = useDashboardData();
 
   const activityEvents = useMemo(
-    () => [...activity].sort((left, right) => right.timestamp.localeCompare(left.timestamp)),
+    () => [...activity].sort((left, right) => left.timestamp.localeCompare(right.timestamp)),
     [activity]
   );
 
