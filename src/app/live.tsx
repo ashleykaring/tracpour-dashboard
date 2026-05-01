@@ -1,5 +1,6 @@
+import { router } from 'expo-router';
 import { useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { EmptyState } from '@/components/empty-state';
 import { JobHeader } from '@/components/job-header';
@@ -11,9 +12,11 @@ import { Screen } from '@/components/screen';
 import { SectionHeader } from '@/components/section-header';
 import { StatGrid } from '@/components/stat-grid';
 import { SurfaceCard } from '@/components/surface-card';
-import { Spacing } from '@/constants/theme';
+import { ThemedText } from '@/components/themed-text';
+import { Colors, Spacing } from '@/constants/theme';
 import { formatDateTime } from '@/lib/format';
 import { useDashboardData } from '@/hooks/use-dashboard-data';
+import { completeActivePour } from '@/lib/api';
 
 export default function LiveScreen() {
   const { job, isLoading, metrics, loads } = useDashboardData();
@@ -42,10 +45,31 @@ export default function LiveScreen() {
       <Screen scrollable>
         <EmptyState
           title="No active pour"
-          message="Start a pour to begin tracking yardage and truck activity."
-        />
+          message="Start a pour to begin tracking yardage and truck activity.">
+          <Pressable onPress={() => router.replace('/create-job')} style={styles.primaryButton}>
+            <ThemedButtonText>Start Pour</ThemedButtonText>
+          </Pressable>
+        </EmptyState>
       </Screen>
     );
+  }
+
+  function handleEndPour() {
+    Alert.alert('End pour?', 'This will complete the active pour and return to setup.', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'End Pour',
+        style: 'destructive',
+        onPress: () => {
+          void completeActivePour().then(() => {
+            router.replace('/create-job');
+          });
+        },
+      },
+    ]);
   }
 
   return (
@@ -100,9 +124,21 @@ export default function LiveScreen() {
               </View>
             )}
           </SurfaceCard>
+
+          <Pressable onPress={handleEndPour} style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed]}>
+            <ThemedButtonText color={Colors.light.accent}>End Pour</ThemedButtonText>
+          </Pressable>
         </>
       )}
     </Screen>
+  );
+}
+
+function ThemedButtonText({ children, color = Colors.light.navText }: { children: string; color?: string }) {
+  return (
+    <ThemedText type="smallBold" style={{ color }}>
+      {children}
+    </ThemedText>
   );
 }
 
@@ -110,5 +146,25 @@ const styles = StyleSheet.create({
   recentLoadsList: {
     gap: Spacing.two,
     marginTop: Spacing.one,
+  },
+  primaryButton: {
+    minHeight: 48,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.light.navNavy,
+    marginTop: Spacing.two,
+  },
+  secondaryButton: {
+    minHeight: 48,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: Colors.light.cardBorder,
+    backgroundColor: Colors.light.backgroundElement,
+  },
+  pressed: {
+    opacity: 0.82,
   },
 });

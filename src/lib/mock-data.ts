@@ -301,6 +301,31 @@ export async function startMockPour(input: StartPourInput) {
   return currentJob;
 }
 
+export async function completeMockActivePour() {
+  await hydrateMockState();
+
+  if (!currentJob) {
+    return null;
+  }
+
+  currentJob = {
+    ...currentJob,
+    status: 'completed',
+    endedAt: new Date().toISOString(),
+  };
+
+  await saveMockState();
+
+  currentJob = null;
+  currentLoads = [];
+  currentActivity = [];
+  currentTickets = [];
+
+  await saveMockState();
+
+  return null;
+}
+
 export const getMockActiveJob = getMockActivePour;
 export const getMockLoads = getMockLoadsForActivePour;
 export const createMockJob = startMockPour;

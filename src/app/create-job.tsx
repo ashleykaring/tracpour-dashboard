@@ -64,7 +64,7 @@ export default function CreateJobScreen() {
             Setup
           </ThemedText>
           <ThemedText themeColor="textSecondary">
-            Enter the pour details to begin tracking yardage.
+            Enter pour details to start tracking
           </ThemedText>
         </View>
 

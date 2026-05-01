@@ -3,6 +3,7 @@ import {
   getMockLoadsForActivePour,
   getMockPourActivity,
   getMockTicketsForActivePour,
+  completeMockActivePour,
   startMockPour,
 } from './mock-data';
 import { computeDashboardMetrics } from './dashboard';
@@ -101,6 +102,17 @@ export async function getDashboardSummary(): Promise<DashboardMetrics | null> {
   }
 
   return delay(computeDashboardMetrics(activePour, await getMockLoadsForActivePour()));
+}
+
+export async function completeActivePour(): Promise<Job | null> {
+  if (shouldUseBackend()) {
+    return requestFromBackend<Job>('/api/pours/active/complete', {
+      method: 'POST',
+      body: JSON.stringify({}),
+    });
+  }
+
+  return delay(await completeMockActivePour());
 }
 
 export const getActiveJob = getActivePour;
