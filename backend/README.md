@@ -66,8 +66,9 @@ Behavior:
 - Every accepted event is saved in `raw_events`.
 - If there is no active pour, the raw event is stored unassigned.
 - `engine_start` and `engine_stop` create activity records for the active pour.
-- `truck_leave` creates a completed load for the active pour with the next sequence number and `9.5 CY`.
-- `truck_enter` is saved as a raw event only for now.
+- `truck_enter` creates one in-progress load for the active pour if no load is already in progress.
+- `truck_leave` completes the in-progress load, or creates a completed load directly if no matching enter event exists.
+- Completed loads count as `9.5 CY`.
 
 ## Railway
 

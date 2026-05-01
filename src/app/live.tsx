@@ -21,8 +21,18 @@ export default function LiveScreen() {
   const recentLoads = useMemo(
     () =>
       [...loads]
-        .filter((load) => load.status === 'completed' && load.completedAt)
-        .sort((left, right) => (right.completedAt ?? '').localeCompare(left.completedAt ?? ''))
+        .filter((load) => load.status === 'incomplete' || load.completedAt)
+        .sort((left, right) => {
+          if (left.status === 'incomplete' && right.status !== 'incomplete') {
+            return -1;
+          }
+
+          if (right.status === 'incomplete' && left.status !== 'incomplete') {
+            return 1;
+          }
+
+          return (right.completedAt ?? '').localeCompare(left.completedAt ?? '');
+        })
         .slice(0, 5),
     [loads]
   );
@@ -80,7 +90,7 @@ export default function LiveScreen() {
             {recentLoads.length === 0 ? (
               <EmptyState
                 title="Awaiting first truck"
-                message="Completed loads will appear here automatically as they come in."
+                message="Truck activity will appear here automatically as events come in."
               />
             ) : (
               <View style={styles.recentLoadsList}>

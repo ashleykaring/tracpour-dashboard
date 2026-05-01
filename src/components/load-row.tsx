@@ -11,16 +11,18 @@ type LoadRowProps = {
 };
 
 export function LoadRow({ load }: LoadRowProps) {
+  const isInProgress = load.status === 'incomplete';
+
   return (
     <View style={styles.row}>
       <View style={styles.left}>
         <ThemedText type="smallBold">{`Load ${load.sequenceNumber}`}</ThemedText>
         <ThemedText themeColor="textSecondary">
-          {load.completedAt ? formatDateTime(load.completedAt) : 'Waiting for completion'}
+          {isInProgress ? 'Truck on site' : load.completedAt ? formatDateTime(load.completedAt) : 'Waiting for completion'}
         </ThemedText>
       </View>
       <View style={styles.right}>
-        <ThemedText type="dataPoint">{`${load.yardage.toFixed(1)} CY`}</ThemedText>
+        <ThemedText type="dataPoint">{isInProgress ? 'In progress' : `${load.yardage.toFixed(1)} CY`}</ThemedText>
       </View>
     </View>
   );
