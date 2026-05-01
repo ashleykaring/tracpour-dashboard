@@ -68,3 +68,10 @@ alter table public.loads enable row level security;
 alter table public.activity_events enable row level security;
 alter table public.trucking_tickets enable row level security;
 alter table public.raw_events enable row level security;
+
+grant usage on schema public to service_role;
+grant all privileges on all tables in schema public to service_role;
+grant all privileges on all sequences in schema public to service_role;
+
+alter default privileges in schema public grant all privileges on tables to service_role;
+alter default privileges in schema public grant all privileges on sequences to service_role;
