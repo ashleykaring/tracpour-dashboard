@@ -44,7 +44,7 @@ export default function TicketsScreen() {
       ) : (
         <>
           <SurfaceCard>
-            <SectionHeader title="Ticket Links" subtitle={`${availableTicketCount} available`} />
+            <SectionHeader title="Trucking Tickets" subtitle={`${availableTicketCount} available`} />
             {sortedTickets.length === 0 ? (
               <EmptyState
                 title="No ticket links yet"
