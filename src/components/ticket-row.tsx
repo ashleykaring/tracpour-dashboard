@@ -13,35 +13,42 @@ type TicketRowProps = {
 
 export function TicketRow({ ticket }: TicketRowProps) {
   const canDownload = Boolean(ticket.downloadUrl);
-  const displayLabel = ticket.truckLabel ?? ticket.ticketNumber ?? 'Ticket pending';
+  const displayLabel = ticket.ticketNumber ? `Ticket ${ticket.ticketNumber}` : 'Ticket link';
   const statusLabel = ticket.status === 'available' ? 'available' : 'pending';
+  const supportingDetails = [
+    ticket.truckLabel,
+    ticket.deliveredAt ? formatDateTime(ticket.deliveredAt) : null,
+  ].filter(Boolean);
+  const hasBottomRow = typeof ticket.yardage === 'number' || canDownload;
 
   return (
     <View style={styles.row}>
       <View style={styles.topRow}>
         <View style={styles.copy}>
           <ThemedText type="smallBold">{displayLabel}</ThemedText>
-          <ThemedText themeColor="textSecondary">
-            {ticket.deliveredAt ? formatDateTime(ticket.deliveredAt) : 'Delivery time pending'}
-          </ThemedText>
+          {supportingDetails.length > 0 ? (
+            <ThemedText themeColor="textSecondary">{supportingDetails.join(' | ')}</ThemedText>
+          ) : null}
         </View>
         <StatusPill label={statusLabel} tone={ticket.status === 'available' ? 'success' : 'neutral'} />
       </View>
 
-      <View style={styles.bottomRow}>
-        <ThemedText type="dataPoint">
-          {typeof ticket.yardage === 'number' ? `${ticket.yardage.toFixed(1)} CY` : 'Yardage pending'}
-        </ThemedText>
-        {canDownload ? (
-          <Pressable onPress={() => Linking.openURL(ticket.downloadUrl!)} style={styles.button}>
-            <ThemedText type="smallBold" style={styles.buttonText}>
-              Download Ticket
-            </ThemedText>
-          </Pressable>
-        ) : (
-          <ThemedText themeColor="textSecondary">Ticket unavailable</ThemedText>
-        )}
-      </View>
+      {hasBottomRow ? (
+        <View style={styles.bottomRow}>
+          {typeof ticket.yardage === 'number' ? (
+            <ThemedText type="dataPoint">{`${ticket.yardage.toFixed(1)} CY`}</ThemedText>
+          ) : (
+            <View />
+          )}
+          {canDownload ? (
+            <Pressable onPress={() => Linking.openURL(ticket.downloadUrl!)} style={styles.button}>
+              <ThemedText type="smallBold" style={styles.buttonText}>
+                Download Ticket
+              </ThemedText>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
     </View>
   );
 }
