@@ -39,7 +39,7 @@ create index if not exists idx_activity_events_job_time on public.activity_event
 
 create table if not exists public.trucking_tickets (
   id uuid primary key default gen_random_uuid(),
-  job_id uuid not null references public.pours(id) on delete cascade,
+  job_id uuid references public.pours(id) on delete set null,
   status text not null check (status in ('available', 'pending')),
   truck_label text,
   ticket_number text,
@@ -49,7 +49,17 @@ create table if not exists public.trucking_tickets (
   created_at timestamptz not null default now()
 );
 
+alter table public.trucking_tickets alter column job_id drop not null;
+alter table public.trucking_tickets drop constraint if exists trucking_tickets_job_id_fkey;
+alter table public.trucking_tickets
+  add constraint trucking_tickets_job_id_fkey
+  foreign key (job_id) references public.pours(id) on delete set null;
+
 create index if not exists idx_trucking_tickets_job_id on public.trucking_tickets(job_id);
+create index if not exists idx_trucking_tickets_job_ticket_number on public.trucking_tickets(job_id, ticket_number);
+create index if not exists idx_trucking_tickets_unassigned_recent
+  on public.trucking_tickets(created_at)
+  where job_id is null;
 
 create table if not exists public.raw_events (
   id uuid primary key default gen_random_uuid(),

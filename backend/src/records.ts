@@ -30,7 +30,7 @@ export type ActivityEventRecord = {
 
 export type TruckingTicketRecord = {
   id: string;
-  job_id: string;
+  job_id: string | null;
   status: string;
   truck_label: string | null;
   ticket_number: string | null;

@@ -40,7 +40,7 @@ export function serializeActivityEvent(event: ActivityEventRecord) {
 export function serializeTruckingTicket(ticket: TruckingTicketRecord) {
   return {
     id: ticket.id,
-    jobId: ticket.job_id,
+    jobId: ticket.job_id ?? undefined,
     status: ticket.status,
     truckLabel: ticket.truck_label ?? undefined,
     ticketNumber: ticket.ticket_number ?? undefined,

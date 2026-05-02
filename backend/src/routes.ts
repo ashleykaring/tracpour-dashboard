@@ -12,6 +12,7 @@ import {
   listLoadsForPour,
   listTicketsForPour,
 } from './services/pours';
+import { attachRecentUnassignedTicketsToPour, createOrUpdateTicket } from './services/tickets';
 import {
   serializeActivityEvent,
   serializeLoad,
@@ -29,6 +30,40 @@ const ingestEventSchema = z.object({
   type: z.enum(EVENT_TYPES),
   timestamp: z.string().datetime().optional(),
 });
+
+const optionalText = z.preprocess(
+  (value) => (value === null || value === '' ? undefined : value),
+  z.string().trim().min(1).optional()
+);
+
+const optionalNumber = z.preprocess(
+  (value) => (value === null || value === '' ? undefined : value),
+  z.coerce.number().positive().optional()
+);
+
+const createTicketSchema = z
+  .object({
+    jobId: z.preprocess(
+      (value) => (value === null || value === '' ? undefined : value),
+      z.string().uuid().optional()
+    ),
+    ticketNumber: optionalText,
+    downloadUrl: optionalText,
+    truckLabel: optionalText,
+    deliveredAt: z.preprocess(
+      (value) => (value === null || value === '' ? undefined : value),
+      z.string().datetime().optional()
+    ),
+    yardage: optionalNumber,
+    status: z.preprocess(
+      (value) => (value === null || value === '' ? undefined : value),
+      z.enum(['available', 'pending']).optional()
+    ),
+  })
+  .refine((input) => input.ticketNumber || input.downloadUrl, {
+    message: 'Provide at least a ticketNumber or downloadUrl.',
+    path: ['ticketNumber'],
+  });
 
 export async function registerRoutes(app: FastifyInstance) {
   app.get('/health', async () => ({ ok: true }));
@@ -60,6 +95,7 @@ export async function registerRoutes(app: FastifyInstance) {
       expectedYardage: input.expectedYardage,
       startedAt: input.startedAt,
     });
+    await attachRecentUnassignedTicketsToPour(pour.id);
 
     return reply.code(201).send(serializePour(pour));
   });
@@ -133,6 +169,25 @@ export async function registerRoutes(app: FastifyInstance) {
     }
 
     return reply.code(202).send(await ingestEvent(input));
+  });
+
+  app.post('/api/tickets', async (request, reply) => {
+    const input = parseBody(createTicketSchema, request.body, reply);
+
+    if (!input) {
+      return;
+    }
+
+    const result = await createOrUpdateTicket(input);
+
+    if (!result) {
+      return reply.code(404).send({
+        error: 'POUR_NOT_FOUND',
+        message: 'No pour exists with that jobId.',
+      });
+    }
+
+    return reply.code(result.created ? 201 : 200).send(serializeTruckingTicket(result.ticket));
   });
 }
 
