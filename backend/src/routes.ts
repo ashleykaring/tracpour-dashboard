@@ -50,11 +50,13 @@ const createTicketSchema = z
     ticketNumber: optionalText,
     downloadUrl: optionalText,
     truckLabel: optionalText,
+    truck: optionalText,
     deliveredAt: z.preprocess(
       (value) => (value === null || value === '' ? undefined : value),
       z.string().datetime().optional()
     ),
     yardage: optionalNumber,
+    quant: optionalNumber,
     status: z.preprocess(
       (value) => (value === null || value === '' ? undefined : value),
       z.enum(['available', 'pending']).optional()
@@ -178,7 +180,15 @@ export async function registerRoutes(app: FastifyInstance) {
       return;
     }
 
-    const result = await createOrUpdateTicket(input);
+    const result = await createOrUpdateTicket({
+      jobId: input.jobId,
+      ticketNumber: input.ticketNumber,
+      downloadUrl: input.downloadUrl,
+      truckLabel: input.truckLabel ?? formatTruckLabel(input.truck),
+      deliveredAt: input.deliveredAt,
+      yardage: input.yardage ?? input.quant,
+      status: input.status,
+    });
 
     if (!result) {
       return reply.code(404).send({
@@ -189,6 +199,14 @@ export async function registerRoutes(app: FastifyInstance) {
 
     return reply.code(result.created ? 201 : 200).send(serializeTruckingTicket(result.ticket));
   });
+}
+
+function formatTruckLabel(truck?: string) {
+  if (!truck) {
+    return undefined;
+  }
+
+  return truck.toLowerCase().startsWith('truck') ? truck : `Truck ${truck}`;
 }
 
 function parseBody<T extends z.ZodTypeAny>(

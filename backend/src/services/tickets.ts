@@ -21,9 +21,7 @@ export async function createOrUpdateTicket(input: CreateTicketInput) {
     return null;
   }
 
-  const existingTicket = input.ticketNumber
-    ? await getExistingTicketByNumber(jobId, input.ticketNumber)
-    : null;
+  const existingTicket = await getExistingTicket(jobId, input);
 
   if (existingTicket) {
     const ticket = await updateTicket(existingTicket, input);
@@ -77,11 +75,31 @@ async function resolveTicketJobId(jobId?: string) {
   return activePour?.id ?? null;
 }
 
-async function getExistingTicketByNumber(jobId: string | null, ticketNumber: string) {
+async function getExistingTicket(jobId: string | null, input: CreateTicketInput) {
+  if (input.ticketNumber) {
+    const ticketByNumber = await getExistingTicketByField(jobId, 'ticket_number', input.ticketNumber);
+
+    if (ticketByNumber) {
+      return ticketByNumber;
+    }
+  }
+
+  if (input.downloadUrl) {
+    return getExistingTicketByField(jobId, 'download_url', input.downloadUrl);
+  }
+
+  return null;
+}
+
+async function getExistingTicketByField(
+  jobId: string | null,
+  field: 'ticket_number' | 'download_url',
+  value: string
+) {
   const query = supabase
     .from('trucking_tickets')
     .select('*')
-    .eq('ticket_number', ticketNumber)
+    .eq(field, value)
     .order('created_at', { ascending: false })
     .limit(1);
 
@@ -116,6 +134,7 @@ async function updateTicket(existingTicket: TruckingTicketRecord, input: CreateT
     .from('trucking_tickets')
     .update({
       status: resolveUpdatedStatus(existingTicket, input),
+      ticket_number: input.ticketNumber ?? existingTicket.ticket_number,
       truck_label: input.truckLabel ?? existingTicket.truck_label,
       delivered_at: input.deliveredAt ?? existingTicket.delivered_at,
       yardage: input.yardage ?? existingTicket.yardage,

@@ -13,10 +13,12 @@ type TicketRowProps = {
 
 export function TicketRow({ ticket }: TicketRowProps) {
   const canDownload = Boolean(ticket.downloadUrl);
-  const displayLabel = ticket.ticketNumber ? `Ticket ${ticket.ticketNumber}` : 'Ticket link';
+  const displayLabel = ticket.ticketNumber
+    ? `Ticket ${ticket.ticketNumber}`
+    : ticket.truckLabel ?? 'Ticket link';
   const statusLabel = ticket.status === 'available' ? 'available' : 'pending';
   const supportingDetails = [
-    ticket.truckLabel,
+    ticket.ticketNumber ? ticket.truckLabel : null,
     ticket.deliveredAt ? formatDateTime(ticket.deliveredAt) : null,
   ].filter(Boolean);
   const hasBottomRow = typeof ticket.yardage === 'number' || canDownload;

@@ -57,6 +57,7 @@ alter table public.trucking_tickets
 
 create index if not exists idx_trucking_tickets_job_id on public.trucking_tickets(job_id);
 create index if not exists idx_trucking_tickets_job_ticket_number on public.trucking_tickets(job_id, ticket_number);
+create index if not exists idx_trucking_tickets_job_download_url on public.trucking_tickets(job_id, download_url);
 create index if not exists idx_trucking_tickets_unassigned_recent
   on public.trucking_tickets(created_at)
   where job_id is null;

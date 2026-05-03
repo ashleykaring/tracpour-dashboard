@@ -92,6 +92,16 @@ Body:
 }
 ```
 
+QR ticket payloads can also use:
+
+```json
+{
+  "quant": 9.5,
+  "truck": "14",
+  "downloadUrl": "https://example.com/tickets/tp-1042.pdf"
+}
+```
+
 Behavior:
 
 - If `jobId` is omitted, the ticket is attached to the active pour.
@@ -99,8 +109,9 @@ Behavior:
 - If no pour is active and `jobId` is omitted, the ticket is saved as unassigned.
 - When a new pour starts, unassigned tickets created in the last 24 hours attach to that pour.
 - `ticketNumber` or `downloadUrl` is required.
+- `quant` is normalized to `yardage`; `truck` is normalized to `truckLabel`.
 - Tickets are stored separately from loads because truck events currently do not include a truck ID.
-- Re-posting the same `ticketNumber` for the same pour updates the existing ticket record.
+- Re-posting the same `ticketNumber` or `downloadUrl` for the same pour updates the existing ticket record.
 
 ## Railway
 
