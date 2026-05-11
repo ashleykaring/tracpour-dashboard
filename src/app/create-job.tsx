@@ -7,13 +7,10 @@ import { SurfaceCard } from "@/components/surface-card";
 import { ThemedText } from "@/components/themed-text";
 import { Colors, Spacing } from "@/constants/theme";
 import { startPour } from "@/lib/api";
-import { defaultJobTemplate } from "@/lib/mock-data";
 
 export default function CreateJobScreen() {
-  const [jobName, setJobName] = useState(defaultJobTemplate.name);
-  const [expectedYardage, setExpectedYardage] = useState(
-    String(defaultJobTemplate.expectedYardage),
-  );
+  const [jobName, setJobName] = useState("");
+  const [expectedYardage, setExpectedYardage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   async function handleStartJob() {
@@ -74,7 +71,7 @@ export default function CreateJobScreen() {
             <TextInput
               value={jobName}
               onChangeText={setJobName}
-              placeholder="Riverside Bridge"
+              placeholder="Name / Description"
               placeholderTextColor={Colors.light.textSecondary}
               style={styles.input}
             />
@@ -86,7 +83,7 @@ export default function CreateJobScreen() {
               value={expectedYardage}
               onChangeText={setExpectedYardage}
               keyboardType="decimal-pad"
-              placeholder="118"
+              placeholder="Cubic Yards"
               placeholderTextColor={Colors.light.textSecondary}
               style={styles.input}
             />
@@ -102,7 +99,7 @@ export default function CreateJobScreen() {
             ]}
           >
             <ThemedText type="smallBold" style={styles.buttonText}>
-              {isSaving ? "Starting Pour..." : "Start Pour"}
+              {isSaving ? "Starting Pour..." : "Start Tracking"}
             </ThemedText>
           </Pressable>
         </SurfaceCard>
