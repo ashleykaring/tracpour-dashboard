@@ -19,6 +19,8 @@ import type {
 
 const MOCK_DELAY_MS = 350;
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, '');
+const USE_BACKEND_OVERRIDE = process.env.EXPO_PUBLIC_USE_BACKEND;
+const IS_DEVELOPMENT = typeof __DEV__ !== 'undefined' ? __DEV__ : process.env.NODE_ENV !== 'production';
 
 function delay<T>(value: T): Promise<T> {
   return new Promise((resolve) => {
@@ -27,7 +29,19 @@ function delay<T>(value: T): Promise<T> {
 }
 
 function shouldUseBackend() {
-  return Boolean(API_BASE_URL);
+  if (!API_BASE_URL) {
+    return false;
+  }
+
+  if (USE_BACKEND_OVERRIDE === 'true') {
+    return true;
+  }
+
+  if (USE_BACKEND_OVERRIDE === 'false') {
+    return false;
+  }
+
+  return !IS_DEVELOPMENT;
 }
 
 async function requestFromBackend<T>(path: string, options?: RequestInit): Promise<T> {

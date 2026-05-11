@@ -15,12 +15,14 @@ export function JobHeader({ job }: JobHeaderProps) {
     <View style={styles.container}>
       <View style={styles.row}>
         <View style={styles.copy}>
-          <ThemedText type="eyebrow">Active Pour</ThemedText>
+          <ThemedText type="eyebrow">Tracking</ThemedText>
           <ThemedText type="screenTitle" style={styles.jobTitle}>
             {job?.name ?? "Loading active pour"}
           </ThemedText>
         </View>
-        <StatusPill label={job?.status === "completed" ? "Completed" : "Active"} />
+        <View style={styles.actions}>
+          <StatusPill label={job?.status === "completed" ? "Completed" : "Active"} />
+        </View>
       </View>
     </View>
   );
@@ -44,5 +46,10 @@ const styles = StyleSheet.create({
   },
   jobTitle: {
     fontFamily: "BarlowCondensed_700Bold",
+  },
+  actions: {
+    alignItems: "flex-end",
+    gap: Spacing.two,
+    marginTop: Spacing.three + Spacing.one,
   },
 });
