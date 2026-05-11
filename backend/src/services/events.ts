@@ -9,7 +9,7 @@ type IngestEventInput = {
 };
 
 export async function ingestEvent(input: IngestEventInput) {
-  const eventTimestamp = input.timestamp ?? new Date().toISOString();
+  const eventTimestamp = new Date().toISOString();
   const activePour = await getActivePourRecord();
 
   const rawEvent = await createRawEvent({
