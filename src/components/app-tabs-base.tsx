@@ -1,6 +1,6 @@
 import { router, usePathname } from "expo-router";
-import React, { PropsWithChildren } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import React, { PropsWithChildren, useState } from "react";
+import { Image, Modal, Pressable, StyleSheet, View } from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -130,24 +130,75 @@ function TabButton({ label, isFocused, onPress }: TabButtonProps) {
 
 function QrCodeButton() {
   const theme = useTheme();
+  const [isQrVisible, setIsQrVisible] = useState(false);
 
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel="Download and QR Code"
-      onPress={() => undefined}
-      style={({ pressed }) => [
-        styles.qrButton,
-        {
-          backgroundColor: theme.background,
-          borderColor: "rgba(255,255,255,0.72)",
-          shadowColor: theme.shadow,
-        },
-        pressed && styles.pressed,
-      ]}
-    >
-      <MaterialCommunityIcons name="qrcode" size={27} color={theme.accent} />
-    </Pressable>
+    <>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Open QR Code"
+        onPress={() => setIsQrVisible(true)}
+        style={({ pressed }) => [
+          styles.qrButton,
+          {
+            backgroundColor: theme.background,
+            borderColor: "rgba(255,255,255,0.72)",
+            shadowColor: theme.shadow,
+          },
+          pressed && styles.pressed,
+        ]}
+      >
+        <MaterialCommunityIcons name="qrcode" size={27} color={theme.accent} />
+      </Pressable>
+
+      <Modal
+        animationType="fade"
+        transparent
+        visible={isQrVisible}
+        onRequestClose={() => setIsQrVisible(false)}
+      >
+        <View style={styles.modalRoot}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Close QR Code"
+            style={styles.modalBackdrop}
+            onPress={() => setIsQrVisible(false)}
+          />
+          <View
+            style={[
+              styles.qrPanel,
+              {
+                backgroundColor: theme.backgroundElement,
+                borderColor: theme.cardBorder,
+                shadowColor: theme.shadow,
+              },
+            ]}
+          >
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Close QR Code"
+              onPress={() => setIsQrVisible(false)}
+              style={({ pressed }) => [
+                styles.closeButton,
+                {
+                  backgroundColor: theme.background,
+                  borderColor: theme.cardBorder,
+                },
+                pressed && styles.pressed,
+              ]}
+            >
+              <MaterialCommunityIcons name="close" size={20} color={theme.accent} />
+            </Pressable>
+
+            <Image
+              source={require("@/assets/images/tracpour_qr_code.png")}
+              style={styles.qrImage}
+              resizeMode="contain"
+            />
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }
 
@@ -225,6 +276,46 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.4,
+  },
+  modalRoot: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: Spacing.three,
+  },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(17,33,45,0.58)",
+  },
+  qrPanel: {
+    width: "100%",
+    maxWidth: 320,
+    alignSelf: "center",
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: Spacing.three,
+    paddingTop: Spacing.four,
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 8,
+  },
+  closeButton: {
+    position: "absolute",
+    top: Spacing.two,
+    right: Spacing.two,
+    zIndex: 1,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  qrImage: {
+    width: 260,
+    height: 260,
+    alignSelf: "center",
   },
   content: {
     flex: 1,
