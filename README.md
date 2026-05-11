@@ -9,9 +9,9 @@ npm install
 npx expo start
 ```
 
-The app uses local mock data by default during development. Deployed/static builds use the backend automatically when `EXPO_PUBLIC_API_BASE_URL` is configured.
+The app uses the backend whenever `EXPO_PUBLIC_API_BASE_URL` is configured. Deployed/static builds should have this set to the Railway backend URL; otherwise the app refuses to use browser-only mock data on non-local web hosts.
 
-To opt into the backend locally, create `.env.local` with:
+For local full-stack testing, create `.env.local` with:
 
 ```bash
 EXPO_PUBLIC_USE_BACKEND=true
@@ -20,7 +20,7 @@ EXPO_PUBLIC_API_BASE_URL=http://localhost:4000
 
 When testing on a physical device, use your computer's LAN IP instead of `localhost`.
 
-`EXPO_PUBLIC_USE_BACKEND` is only needed as an override. Leave it unset in Vercel unless you specifically need to force mock data with `false`.
+For local mock-only testing, either remove `EXPO_PUBLIC_API_BASE_URL` from `.env.local` or set `EXPO_PUBLIC_USE_BACKEND=false`.
 
 ## App Flow
 
