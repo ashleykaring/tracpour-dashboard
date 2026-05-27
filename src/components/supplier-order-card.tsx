@@ -21,6 +21,37 @@ export function SupplierOrderCard({ supplierOrder, totalPoured }: SupplierOrderC
       : delta < -0.05
         ? 'Pump ahead of plant'
         : 'Plant and pump aligned';
+  const supplierDataPoints = [
+    supplierOrder.supplierPlantName
+      ? {
+          label: 'Plant',
+          value: supplierOrder.supplierPlantName,
+        }
+      : null,
+    {
+      label: 'Mix Design',
+      value: supplierOrder.mixDesign,
+    },
+    {
+      label: 'Ordered',
+      value: `${supplierOrder.orderedYardage.toFixed(1)} CY`,
+    },
+    {
+      label: 'Batched to Date',
+      value: `${supplierOrder.batchedYardage.toFixed(1)} CY`,
+    },
+    {
+      label: 'Trucks En Route',
+      value: `${supplierOrder.trucksEnRoute}`,
+    },
+    {
+      label: 'Next ETA',
+      value:
+        typeof supplierOrder.nextTruckEtaMinutes === 'number'
+          ? `${supplierOrder.nextTruckEtaMinutes} min`
+          : 'Not available',
+    },
+  ].filter((item): item is { label: string; value: string } => Boolean(item));
 
   return (
     <SurfaceCard style={styles.card}>
@@ -30,21 +61,14 @@ export function SupplierOrderCard({ supplierOrder, totalPoured }: SupplierOrderC
       </View>
 
       <View style={styles.grid}>
-        {supplierOrder.supplierPlantName ? (
-          <SupplierDataPoint label="Plant" value={supplierOrder.supplierPlantName} />
-        ) : null}
-        <SupplierDataPoint label="Mix Design" value={supplierOrder.mixDesign} />
-        <SupplierDataPoint label="Ordered" value={`${supplierOrder.orderedYardage.toFixed(1)} CY`} />
-        <SupplierDataPoint label="Batched to Date" value={`${supplierOrder.batchedYardage.toFixed(1)} CY`} />
-        <SupplierDataPoint label="Trucks En Route" value={`${supplierOrder.trucksEnRoute}`} />
-        <SupplierDataPoint
-          label="Next ETA"
-          value={
-            typeof supplierOrder.nextTruckEtaMinutes === 'number'
-              ? `${supplierOrder.nextTruckEtaMinutes} min`
-              : 'Not available'
-          }
-        />
+        {supplierDataPoints.map((item, index) => (
+          <SupplierDataPoint
+            key={item.label}
+            label={item.label}
+            value={item.value}
+            isRightColumn={index % 2 === 1}
+          />
+        ))}
       </View>
 
       <View style={styles.reconciliation}>
@@ -60,9 +84,17 @@ export function SupplierOrderCard({ supplierOrder, totalPoured }: SupplierOrderC
   );
 }
 
-function SupplierDataPoint({ label, value }: { label: string; value: string }) {
+function SupplierDataPoint({
+  label,
+  value,
+  isRightColumn = false,
+}: {
+  label: string;
+  value: string;
+  isRightColumn?: boolean;
+}) {
   return (
-    <View style={styles.dataPoint}>
+    <View style={[styles.dataPoint, isRightColumn && styles.dataPointRight]}>
       <ThemedText type="small" themeColor="textSecondary">
         {label}
       </ThemedText>
@@ -113,6 +145,9 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     minWidth: 132,
     gap: Spacing.half,
+  },
+  dataPointRight: {
+    paddingLeft: Spacing.three,
   },
   value: {
     flexShrink: 1,
