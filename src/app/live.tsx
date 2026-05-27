@@ -1,6 +1,6 @@
 import { router } from "expo-router";
-import { useMemo, useState } from "react";
-import { Alert, Platform, Pressable, StyleSheet, View } from "react-native";
+import { useMemo } from "react";
+import { Pressable, StyleSheet, View } from "react-native";
 
 import { EmptyState } from "@/components/empty-state";
 import { JobHeader } from "@/components/job-header";
@@ -16,12 +16,10 @@ import { SupplierOrderCard } from "@/components/supplier-order-card";
 import { ThemedText } from "@/components/themed-text";
 import { Colors, Spacing } from "@/constants/theme";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
-import { completeActivePour } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
 
 export default function LiveScreen() {
   const { job, isLoading, metrics, loads, supplierOrder } = useDashboardData();
-  const [isEndingPour, setIsEndingPour] = useState(false);
 
   const recentLoads = useMemo(
     () =>
@@ -62,53 +60,8 @@ export default function LiveScreen() {
     );
   }
 
-  async function endPour() {
-    if (isEndingPour) {
-      return;
-    }
-
-    setIsEndingPour(true);
-
-    try {
-      await completeActivePour();
-      router.replace("/create-job");
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unable to end pour.";
-      Alert.alert("Could not end pour", message);
-    } finally {
-      setIsEndingPour(false);
-    }
-  }
-
   function handleEndPour() {
-    if (Platform.OS === "web") {
-      const confirmed = window.confirm("End this pour and return to setup?");
-
-      if (confirmed) {
-        void endPour();
-      }
-
-      return;
-    }
-
-    Alert.alert(
-      "End pour?",
-      "This will complete the active pour and return to setup.",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "End Pour",
-          style: "destructive",
-          onPress: () => {
-            void endPour();
-          },
-        },
-      ],
-    );
+    router.replace("/create-job");
   }
 
   return (
@@ -170,15 +123,13 @@ export default function LiveScreen() {
 
           <Pressable
             onPress={handleEndPour}
-            disabled={isEndingPour}
             style={({ pressed }) => [
               styles.secondaryButton,
               pressed && styles.pressed,
-              isEndingPour && styles.disabled,
             ]}
           >
             <ThemedButtonText color="#B42318">
-              {isEndingPour ? "Ending Pour..." : "End Pour"}
+              End Pour
             </ThemedButtonText>
           </Pressable>
         </>
