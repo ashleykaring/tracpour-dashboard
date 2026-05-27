@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { Alert, Pressable, StyleSheet, TextInput, View } from "react-native";
+import { Alert, Modal, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { SurfaceCard } from "@/components/surface-card";
@@ -9,10 +9,41 @@ import { Colors, Spacing } from "@/constants/theme";
 import { startPour } from "@/lib/api";
 
 const DEMO_SUPPLIER_ORDER_NUMBER = "RM-24817";
+const SUPPLIER_PLANT_OPTIONS = [
+  {
+    supplierPlantId: "calportland-demo",
+    supplierPlantName: "CalPortland - Demo Plant",
+    supplierName: "CalPortland",
+    supplierPlatform: "command_alkon_mock",
+  },
+  {
+    supplierPlantId: "vulcan-demo",
+    supplierPlantName: "Vulcan - Demo Plant",
+    supplierName: "Vulcan",
+    supplierPlatform: "command_alkon_mock",
+  },
+  {
+    supplierPlantId: "cemex-demo",
+    supplierPlantName: "CEMEX - Demo Plant",
+    supplierName: "CEMEX",
+    supplierPlatform: "cemex_go_mock",
+  },
+  {
+    supplierPlantId: "other-manual",
+    supplierPlantName: "Other / Manual",
+    supplierName: "Other",
+    supplierPlatform: "manual",
+  },
+] as const;
+type SupplierPlantOption = (typeof SUPPLIER_PLANT_OPTIONS)[number];
 
 export default function CreateJobScreen() {
   const [jobName, setJobName] = useState("");
   const [expectedYardage, setExpectedYardage] = useState("");
+  const [selectedSupplierPlant, setSelectedSupplierPlant] = useState<SupplierPlantOption>(
+    SUPPLIER_PLANT_OPTIONS[0],
+  );
+  const [isSupplierPickerVisible, setIsSupplierPickerVisible] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   async function handleStartJob() {
@@ -41,6 +72,10 @@ export default function CreateJobScreen() {
       name: trimmedName,
       expectedYardage: parsedYardage,
       supplierOrderNumber: DEMO_SUPPLIER_ORDER_NUMBER,
+      supplierPlantId: selectedSupplierPlant.supplierPlantId,
+      supplierPlantName: selectedSupplierPlant.supplierPlantName,
+      supplierName: selectedSupplierPlant.supplierName,
+      supplierPlatform: selectedSupplierPlant.supplierPlatform,
     });
 
     router.replace("/live");
@@ -81,7 +116,7 @@ export default function CreateJobScreen() {
           </View>
 
           <View style={styles.fieldGroup}>
-            <ThemedText type="smallBold">Expected Yardage</ThemedText>
+            <ThemedText type="smallBold">Expected Yardage (CY)</ThemedText>
             <TextInput
               value={expectedYardage}
               onChangeText={setExpectedYardage}
@@ -90,6 +125,21 @@ export default function CreateJobScreen() {
               placeholderTextColor={Colors.light.textSecondary}
               style={styles.input}
             />
+          </View>
+
+          <View style={styles.fieldGroup}>
+            <ThemedText type="smallBold">Ready-Mix Supplier / Batch Plant</ThemedText>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Select ready-mix supplier or batch plant"
+              onPress={() => setIsSupplierPickerVisible(true)}
+              style={({ pressed }) => [styles.selectButton, pressed && styles.buttonPressed]}
+            >
+              <ThemedText style={styles.selectValue}>{selectedSupplierPlant.supplierPlantName}</ThemedText>
+              <ThemedText themeColor="textSecondary" style={styles.selectChevron}>
+                v
+              </ThemedText>
+            </Pressable>
           </View>
 
           <View style={styles.fieldGroup}>
@@ -119,6 +169,50 @@ export default function CreateJobScreen() {
           </Pressable>
         </SurfaceCard>
       </View>
+
+      <Modal
+        animationType="fade"
+        transparent
+        visible={isSupplierPickerVisible}
+        onRequestClose={() => setIsSupplierPickerVisible(false)}
+      >
+        <View style={styles.modalRoot}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Close supplier plant selector"
+            style={styles.modalBackdrop}
+            onPress={() => setIsSupplierPickerVisible(false)}
+          />
+          <View style={styles.pickerPanel}>
+            <ThemedText type="sectionTitle">Ready-Mix Supplier / Batch Plant</ThemedText>
+            <View style={styles.optionList}>
+              {SUPPLIER_PLANT_OPTIONS.map((option) => {
+                const isSelected = option.supplierPlantId === selectedSupplierPlant.supplierPlantId;
+
+                return (
+                  <Pressable
+                    key={option.supplierPlantId}
+                    onPress={() => {
+                      setSelectedSupplierPlant(option);
+                      setIsSupplierPickerVisible(false);
+                    }}
+                    style={({ pressed }) => [
+                      styles.optionButton,
+                      isSelected && styles.optionButtonSelected,
+                      pressed && styles.buttonPressed,
+                    ]}
+                  >
+                    <ThemedText type="smallBold">{option.supplierPlantName}</ThemedText>
+                    <ThemedText type="small" themeColor="textSecondary">
+                      {option.supplierName}
+                    </ThemedText>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -164,6 +258,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
   },
+  selectButton: {
+    minHeight: 52,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Colors.light.cardBorder,
+    backgroundColor: Colors.light.background,
+    paddingHorizontal: Spacing.three,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: Spacing.two,
+  },
+  selectValue: {
+    flex: 1,
+    minWidth: 0,
+  },
+  selectChevron: {
+    fontSize: 18,
+    lineHeight: 22,
+  },
   button: {
     minHeight: 52,
     borderRadius: 16,
@@ -179,5 +293,46 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: Colors.light.navText,
+  },
+  modalRoot: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: Spacing.three,
+  },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(17,33,45,0.58)",
+  },
+  pickerPanel: {
+    width: "100%",
+    maxWidth: 420,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: Colors.light.cardBorder,
+    backgroundColor: Colors.light.backgroundElement,
+    padding: Spacing.three,
+    gap: Spacing.three,
+    shadowColor: Colors.light.shadow,
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 8,
+  },
+  optionList: {
+    gap: Spacing.two,
+  },
+  optionButton: {
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Colors.light.cardBorder,
+    backgroundColor: Colors.light.background,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+    gap: Spacing.half,
+  },
+  optionButtonSelected: {
+    borderColor: Colors.light.accent,
+    backgroundColor: Colors.light.backgroundSelected,
   },
 });

@@ -41,6 +41,10 @@ const startPourSchema = z.object({
   expectedYardage: z.number().positive(),
   startedAt: z.string().datetime().optional(),
   supplierOrderNumber: optionalText,
+  supplierPlantId: optionalText,
+  supplierPlantName: optionalText,
+  supplierName: optionalText,
+  supplierPlatform: optionalText,
 });
 
 const createTicketSchema = z
@@ -99,6 +103,10 @@ export async function registerRoutes(app: FastifyInstance) {
       expectedYardage: input.expectedYardage,
       startedAt: input.startedAt,
       supplierOrderNumber: input.supplierOrderNumber,
+      supplierPlantId: input.supplierPlantId,
+      supplierPlantName: input.supplierPlantName,
+      supplierName: input.supplierName,
+      supplierPlatform: input.supplierPlatform,
     });
     await attachRecentUnassignedTicketsToPour(pour.id);
 

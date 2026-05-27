@@ -26,10 +26,13 @@ export function SupplierOrderCard({ supplierOrder, totalPoured }: SupplierOrderC
     <SurfaceCard style={styles.card}>
       <View style={styles.headerRow}>
         <SectionHeader title="Supplier Order" subtitle={`Order ${supplierOrder.orderNumber}`} />
-        <StatusPill label="Alkon-Style Mock API" tone="neutral" />
+        <StatusPill label={supplierOrder.platform} tone="neutral" />
       </View>
 
       <View style={styles.grid}>
+        {supplierOrder.supplierPlantName ? (
+          <SupplierDataPoint label="Plant" value={supplierOrder.supplierPlantName} />
+        ) : null}
         <SupplierDataPoint label="Mix Design" value={supplierOrder.mixDesign} />
         <SupplierDataPoint label="Ordered" value={`${supplierOrder.orderedYardage.toFixed(1)} CY`} />
         <SupplierDataPoint label="Batched to Date" value={`${supplierOrder.batchedYardage.toFixed(1)} CY`} />

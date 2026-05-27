@@ -8,6 +8,8 @@ create table if not exists public.pours (
   started_at timestamptz not null default now(),
   ended_at timestamptz,
   supplier_order_number text,
+  supplier_plant_id text,
+  supplier_plant_name text,
   supplier_name text,
   supplier_platform text,
   created_at timestamptz not null default now(),
@@ -15,6 +17,8 @@ create table if not exists public.pours (
 );
 
 alter table public.pours add column if not exists supplier_order_number text;
+alter table public.pours add column if not exists supplier_plant_id text;
+alter table public.pours add column if not exists supplier_plant_name text;
 alter table public.pours add column if not exists supplier_name text;
 alter table public.pours add column if not exists supplier_platform text;
 

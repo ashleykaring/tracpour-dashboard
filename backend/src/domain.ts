@@ -17,6 +17,7 @@ export type SupplierOrder = {
   pourId: string;
   orderNumber: string;
   supplierName: string;
+  supplierPlantName?: string;
   platform: string;
   mixDesign: string;
   orderedYardage: number;

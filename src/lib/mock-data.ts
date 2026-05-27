@@ -19,8 +19,10 @@ export const defaultJobTemplate: Job = {
   status: 'active',
   startedAt: '2026-04-17T06:15:00.000Z',
   supplierOrderNumber: 'RM-24817',
-  supplierName: 'Demo Ready-Mix',
-  supplierPlatform: 'Command Alkon-style API',
+  supplierPlantId: 'calportland-demo',
+  supplierPlantName: 'CalPortland - Demo Plant',
+  supplierName: 'CalPortland',
+  supplierPlatform: 'command_alkon_mock',
 };
 
 let currentJob: Job | null = null;
@@ -199,20 +201,22 @@ function buildMockActivity(jobId: string, startedAt: string): ActivityEvent[] {
 }
 
 export function buildMockSupplierOrder(job: Job): SupplierOrder | null {
-  if (!job.supplierOrderNumber) {
+  if (!job.supplierOrderNumber || !job.supplierPlantId) {
     return null;
   }
 
   // TODO: Replace this mock with backend-fetched supplier order data. The backend should use
-  // supplierOrderNumber plus stored contractor/supplier credentials to pull ordered quantity,
-  // batched-to-date quantity, mix design, truck/delivery status, ETA, and ticket/delivery data
-  // from a Command Alkon-style ready-mix supplier API.
+  // supplierPlantId/supplierName plus supplierOrderNumber to choose the correct supplier API
+  // connector, then pull ordered quantity, batched-to-date quantity, mix design, truck/delivery
+  // status, ETA, and ticket/delivery data. CalPortland/Vulcan can map to Command Alkon-style
+  // connectors, CEMEX can map to CEMEX Go, and Other can fall back to manual entry.
   return {
     id: `${job.id}-supplier-order`,
     pourId: job.id,
     orderNumber: job.supplierOrderNumber,
-    supplierName: job.supplierName ?? 'Demo Ready-Mix',
-    platform: job.supplierPlatform ?? 'Command Alkon-style API',
+    supplierName: job.supplierName ?? 'Other',
+    supplierPlantName: job.supplierPlantName,
+    platform: formatSupplierPlatform(job.supplierPlatform),
     mixDesign: '4000 PSI',
     orderedYardage: 344,
     batchedYardage: 47.5,
@@ -220,6 +224,18 @@ export function buildMockSupplierOrder(job: Job): SupplierOrder | null {
     nextTruckEtaMinutes: 12,
     lastSyncedAt: new Date().toISOString(),
   };
+}
+
+function formatSupplierPlatform(platform?: string) {
+  if (platform === 'cemex_go_mock') {
+    return 'CEMEX Go-style API mock';
+  }
+
+  if (platform === 'manual') {
+    return 'Manual / No API connected';
+  }
+
+  return 'Command Alkon-style API mock';
 }
 
 function createDemoJobFromTemplate() {
@@ -291,6 +307,7 @@ export async function startMockPour(input: StartPourInput) {
   const jobId = `job-${Date.now()}`;
   const startedAt = input.startedAt ?? new Date(Date.now() - 150 * 60 * 1000).toISOString();
   const supplierOrderNumber = input.supplierOrderNumber?.trim();
+  const supplierPlantId = input.supplierPlantId?.trim();
 
   currentJob = {
     id: jobId,
@@ -299,8 +316,10 @@ export async function startMockPour(input: StartPourInput) {
     status: 'active',
     startedAt,
     supplierOrderNumber: supplierOrderNumber || undefined,
-    supplierName: supplierOrderNumber ? 'Demo Ready-Mix' : undefined,
-    supplierPlatform: supplierOrderNumber ? 'Command Alkon-style API' : undefined,
+    supplierPlantId: supplierPlantId || undefined,
+    supplierPlantName: input.supplierPlantName?.trim() || undefined,
+    supplierName: input.supplierName?.trim() || undefined,
+    supplierPlatform: input.supplierPlatform?.trim() || undefined,
   };
   currentLoads = buildMockLoads(jobId, startedAt);
   currentActivity = buildMockActivity(jobId, startedAt);

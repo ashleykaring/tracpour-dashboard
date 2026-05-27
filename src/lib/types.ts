@@ -12,6 +12,8 @@ export type Job = {
   startedAt: string;
   endedAt?: string;
   supplierOrderNumber?: string;
+  supplierPlantId?: string;
+  supplierPlantName?: string;
   supplierName?: string;
   supplierPlatform?: string;
 };
@@ -58,6 +60,7 @@ export type SupplierOrder = {
   pourId: string;
   orderNumber: string;
   supplierName: string;
+  supplierPlantName?: string;
   platform: string;
   mixDesign: string;
   orderedYardage: number;
@@ -73,6 +76,10 @@ export type StartPourInput = {
   expectedYardage: number;
   startedAt?: string;
   supplierOrderNumber?: string;
+  supplierPlantId?: string;
+  supplierPlantName?: string;
+  supplierName?: string;
+  supplierPlatform?: string;
 };
 
 export type CreateJobInput = StartPourInput;
