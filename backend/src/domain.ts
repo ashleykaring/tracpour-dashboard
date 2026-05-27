@@ -11,3 +11,18 @@ export type DashboardSummary = {
   progressPercentage: number;
   lastCompletedAt: string | null;
 };
+
+export type SupplierOrder = {
+  id: string;
+  pourId: string;
+  orderNumber: string;
+  supplierName: string;
+  platform: string;
+  mixDesign: string;
+  orderedYardage: number;
+  batchedYardage: number;
+  deliveredYardage?: number;
+  trucksEnRoute: number;
+  nextTruckEtaMinutes?: number;
+  lastSyncedAt?: string;
+};

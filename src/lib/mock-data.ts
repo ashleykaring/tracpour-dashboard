@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import type { ActivityEvent, Job, Load, StartPourInput, TruckingTicket } from './types';
+import type { ActivityEvent, Job, Load, StartPourInput, SupplierOrder, TruckingTicket } from './types';
 
 export const mockScenario = 'setup' as 'setup' | 'active-empty' | 'active-demo';
 const MOCK_STATE_STORAGE_KEY = 'tracpour.mockState.v1';
@@ -15,9 +15,12 @@ type MockState = {
 export const defaultJobTemplate: Job = {
   id: 'job-001',
   name: 'Riverside Bridge',
-  expectedYardage: 118,
+  expectedYardage: 320,
   status: 'active',
   startedAt: '2026-04-17T06:15:00.000Z',
+  supplierOrderNumber: 'RM-24817',
+  supplierName: 'Demo Ready-Mix',
+  supplierPlatform: 'Command Alkon-style API',
 };
 
 let currentJob: Job | null = null;
@@ -110,33 +113,6 @@ function buildMockLoads(jobId: string, startedAt: string): Load[] {
       id: `${jobId}-load-004`,
       jobId,
       sequenceNumber: 4,
-      completedAt: addMinutes(startedAt, 86),
-      yardage: 9.5,
-      yardageSource: 'default',
-      status: 'completed',
-    },
-    {
-      id: `${jobId}-load-005`,
-      jobId,
-      sequenceNumber: 5,
-      completedAt: addMinutes(startedAt, 112),
-      yardage: 9.5,
-      yardageSource: 'default',
-      status: 'completed',
-    },
-    {
-      id: `${jobId}-load-006`,
-      jobId,
-      sequenceNumber: 6,
-      completedAt: addMinutes(startedAt, 139),
-      yardage: 9.5,
-      yardageSource: 'default',
-      status: 'completed',
-    },
-    {
-      id: `${jobId}-load-007`,
-      jobId,
-      sequenceNumber: 7,
       yardage: 9.5,
       yardageSource: 'default',
       status: 'incomplete',
@@ -222,6 +198,30 @@ function buildMockActivity(jobId: string, startedAt: string): ActivityEvent[] {
   ];
 }
 
+export function buildMockSupplierOrder(job: Job): SupplierOrder | null {
+  if (!job.supplierOrderNumber) {
+    return null;
+  }
+
+  // TODO: Replace this mock with backend-fetched supplier order data. The backend should use
+  // supplierOrderNumber plus stored contractor/supplier credentials to pull ordered quantity,
+  // batched-to-date quantity, mix design, truck/delivery status, ETA, and ticket/delivery data
+  // from a Command Alkon-style ready-mix supplier API.
+  return {
+    id: `${job.id}-supplier-order`,
+    pourId: job.id,
+    orderNumber: job.supplierOrderNumber,
+    supplierName: job.supplierName ?? 'Demo Ready-Mix',
+    platform: job.supplierPlatform ?? 'Command Alkon-style API',
+    mixDesign: '4000 PSI',
+    orderedYardage: 344,
+    batchedYardage: 47.5,
+    trucksEnRoute: 2,
+    nextTruckEtaMinutes: 12,
+    lastSyncedAt: new Date().toISOString(),
+  };
+}
+
 function createDemoJobFromTemplate() {
   currentJob = defaultJobTemplate;
   currentLoads = buildMockLoads(defaultJobTemplate.id, defaultJobTemplate.startedAt);
@@ -279,11 +279,18 @@ export async function getMockTicketsForActivePour() {
   return currentJob ? currentTickets : [];
 }
 
+export async function getMockSupplierOrderForActivePour() {
+  await hydrateMockState();
+
+  return currentJob ? buildMockSupplierOrder(currentJob) : null;
+}
+
 export async function startMockPour(input: StartPourInput) {
   await hydrateMockState();
 
   const jobId = `job-${Date.now()}`;
   const startedAt = input.startedAt ?? new Date(Date.now() - 150 * 60 * 1000).toISOString();
+  const supplierOrderNumber = input.supplierOrderNumber?.trim();
 
   currentJob = {
     id: jobId,
@@ -291,6 +298,9 @@ export async function startMockPour(input: StartPourInput) {
     expectedYardage: input.expectedYardage,
     status: 'active',
     startedAt,
+    supplierOrderNumber: supplierOrderNumber || undefined,
+    supplierName: supplierOrderNumber ? 'Demo Ready-Mix' : undefined,
+    supplierPlatform: supplierOrderNumber ? 'Command Alkon-style API' : undefined,
   };
   currentLoads = buildMockLoads(jobId, startedAt);
   currentActivity = buildMockActivity(jobId, startedAt);

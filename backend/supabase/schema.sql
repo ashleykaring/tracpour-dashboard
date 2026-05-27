@@ -7,9 +7,16 @@ create table if not exists public.pours (
   status text not null default 'active' check (status in ('active', 'completed')),
   started_at timestamptz not null default now(),
   ended_at timestamptz,
+  supplier_order_number text,
+  supplier_name text,
+  supplier_platform text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.pours add column if not exists supplier_order_number text;
+alter table public.pours add column if not exists supplier_name text;
+alter table public.pours add column if not exists supplier_platform text;
 
 create index if not exists idx_pours_status on public.pours(status);
 

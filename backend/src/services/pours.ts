@@ -24,7 +24,9 @@ export async function createPour(input: {
   name: string;
   expectedYardage: number;
   startedAt?: string;
+  supplierOrderNumber?: string;
 }): Promise<PourRecord> {
+  const supplierOrderNumber = input.supplierOrderNumber?.trim();
   const { data, error } = await supabase
     .from('pours')
     .insert({
@@ -32,6 +34,9 @@ export async function createPour(input: {
       expected_yardage: input.expectedYardage,
       status: 'active',
       started_at: input.startedAt ?? new Date().toISOString(),
+      supplier_order_number: supplierOrderNumber || null,
+      supplier_name: supplierOrderNumber ? 'Demo Ready-Mix' : null,
+      supplier_platform: supplierOrderNumber ? 'Command Alkon-style API' : null,
     })
     .select('*')
     .single<PourRecord>();

@@ -1,27 +1,39 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { getActivePour, getLoadsForActivePour, getPourActivity, getTicketsForActivePour } from '@/lib/api';
+import {
+  getActivePour,
+  getLoadsForActivePour,
+  getPourActivity,
+  getSupplierOrderForActivePour,
+  getTicketsForActivePour,
+} from '@/lib/api';
 import { computeDashboardMetrics } from '@/lib/dashboard';
-import type { ActivityEvent, Job, Load, TruckingTicket } from '@/lib/types';
+import type { ActivityEvent, Job, Load, SupplierOrder, TruckingTicket } from '@/lib/types';
+
+const DASHBOARD_REFRESH_MS = 10000;
 
 export function useDashboardData() {
   const [job, setJob] = useState<Job | null>(null);
   const [loads, setLoads] = useState<Load[]>([]);
   const [activity, setActivity] = useState<ActivityEvent[]>([]);
   const [tickets, setTickets] = useState<TruckingTicket[]>([]);
+  const [supplierOrder, setSupplierOrder] = useState<SupplierOrder | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
 
-    async function loadDashboard() {
-      setIsLoading(true);
+    async function loadDashboard(showLoading = false) {
+      if (showLoading) {
+        setIsLoading(true);
+      }
 
-      const [activeJob, activeLoads, pourActivity, truckingTickets] = await Promise.all([
+      const [activeJob, activeLoads, pourActivity, truckingTickets, activeSupplierOrder] = await Promise.all([
         getActivePour(),
         getLoadsForActivePour(),
         getPourActivity(),
         getTicketsForActivePour(),
+        getSupplierOrderForActivePour(),
       ]);
 
       if (!isMounted) {
@@ -32,13 +44,18 @@ export function useDashboardData() {
       setLoads(activeLoads);
       setActivity(pourActivity);
       setTickets(truckingTickets);
+      setSupplierOrder(activeSupplierOrder);
       setIsLoading(false);
     }
 
-    void loadDashboard();
+    void loadDashboard(true);
+    const refreshInterval = setInterval(() => {
+      void loadDashboard();
+    }, DASHBOARD_REFRESH_MS);
 
     return () => {
       isMounted = false;
+      clearInterval(refreshInterval);
     };
   }, []);
 
@@ -50,5 +67,5 @@ export function useDashboardData() {
     return computeDashboardMetrics(job, loads);
   }, [job, loads]);
 
-  return { job, loads, activity, tickets, metrics, isLoading };
+  return { job, loads, activity, tickets, supplierOrder, metrics, isLoading };
 }

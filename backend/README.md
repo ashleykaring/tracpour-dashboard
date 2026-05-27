@@ -35,6 +35,7 @@ Do not expose `SUPABASE_SERVICE_ROLE_KEY` in the frontend. It belongs only in th
 - `GET /api/pours/active/loads`
 - `GET /api/pours/active/activity`
 - `GET /api/pours/active/tickets`
+- `GET /api/pours/active/supplier-order`
 - `GET /api/pours/active/summary`
 - `POST /api/tickets`
 

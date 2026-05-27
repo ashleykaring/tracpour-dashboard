@@ -11,6 +11,9 @@ export type Job = {
   status: JobStatus;
   startedAt: string;
   endedAt?: string;
+  supplierOrderNumber?: string;
+  supplierName?: string;
+  supplierPlatform?: string;
 };
 
 export type Load = {
@@ -50,10 +53,26 @@ export type DashboardMetrics = {
   lastCompletedAt: string | null;
 };
 
+export type SupplierOrder = {
+  id: string;
+  pourId: string;
+  orderNumber: string;
+  supplierName: string;
+  platform: string;
+  mixDesign: string;
+  orderedYardage: number;
+  batchedYardage: number;
+  deliveredYardage?: number;
+  trucksEnRoute: number;
+  nextTruckEtaMinutes?: number;
+  lastSyncedAt?: string;
+};
+
 export type StartPourInput = {
   name: string;
   expectedYardage: number;
   startedAt?: string;
+  supplierOrderNumber?: string;
 };
 
 export type CreateJobInput = StartPourInput;

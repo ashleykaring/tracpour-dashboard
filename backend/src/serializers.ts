@@ -13,6 +13,9 @@ export function serializePour(pour: PourRecord) {
     status: pour.status,
     startedAt: pour.started_at,
     endedAt: pour.ended_at ?? undefined,
+    supplierOrderNumber: pour.supplier_order_number ?? undefined,
+    supplierName: pour.supplier_name ?? undefined,
+    supplierPlatform: pour.supplier_platform ?? undefined,
   };
 }
 

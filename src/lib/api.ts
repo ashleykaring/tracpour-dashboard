@@ -2,6 +2,7 @@ import {
   getMockActivePour,
   getMockLoadsForActivePour,
   getMockPourActivity,
+  getMockSupplierOrderForActivePour,
   getMockTicketsForActivePour,
   completeMockActivePour,
   startMockPour,
@@ -14,6 +15,7 @@ import type {
   Job,
   Load,
   StartPourInput,
+  SupplierOrder,
   TruckingTicket,
 } from './types';
 
@@ -138,6 +140,15 @@ export async function getTicketsForActivePour(): Promise<TruckingTicket[]> {
 
   assertMockDataAllowed();
   return delay(await getMockTicketsForActivePour());
+}
+
+export async function getSupplierOrderForActivePour(): Promise<SupplierOrder | null> {
+  if (shouldUseBackend()) {
+    return requestFromBackend<SupplierOrder | null>('/api/pours/active/supplier-order');
+  }
+
+  assertMockDataAllowed();
+  return delay(await getMockSupplierOrderForActivePour());
 }
 
 export async function getDashboardSummary(): Promise<DashboardMetrics | null> {

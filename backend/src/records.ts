@@ -5,6 +5,9 @@ export type PourRecord = {
   status: string;
   started_at: string;
   ended_at: string | null;
+  supplier_order_number: string | null;
+  supplier_name: string | null;
+  supplier_platform: string | null;
   created_at: string;
   updated_at: string;
 };

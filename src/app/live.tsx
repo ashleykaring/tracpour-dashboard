@@ -12,6 +12,7 @@ import { Screen } from "@/components/screen";
 import { SectionHeader } from "@/components/section-header";
 import { StatGrid } from "@/components/stat-grid";
 import { SurfaceCard } from "@/components/surface-card";
+import { SupplierOrderCard } from "@/components/supplier-order-card";
 import { ThemedText } from "@/components/themed-text";
 import { Colors, Spacing } from "@/constants/theme";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
@@ -19,7 +20,7 @@ import { completeActivePour } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
 
 export default function LiveScreen() {
-  const { job, isLoading, metrics, loads } = useDashboardData();
+  const { job, isLoading, metrics, loads, supplierOrder } = useDashboardData();
   const [isEndingPour, setIsEndingPour] = useState(false);
 
   const recentLoads = useMemo(
@@ -125,6 +126,10 @@ export default function LiveScreen() {
           />
 
           <ProgressCard metrics={metrics} />
+
+          {supplierOrder ? (
+            <SupplierOrderCard supplierOrder={supplierOrder} totalPoured={metrics.totalPoured} />
+          ) : null}
 
           <StatGrid
             items={[

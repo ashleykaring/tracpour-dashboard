@@ -12,6 +12,7 @@ import {
   listLoadsForPour,
   listTicketsForPour,
 } from './services/pours';
+import { getSupplierOrderForPour } from './services/supplier-orders';
 import { attachRecentUnassignedTicketsToPour, createOrUpdateTicket } from './services/tickets';
 import {
   serializeActivityEvent,
@@ -19,12 +20,6 @@ import {
   serializePour,
   serializeTruckingTicket,
 } from './serializers';
-
-const startPourSchema = z.object({
-  name: z.string().trim().min(1),
-  expectedYardage: z.number().positive(),
-  startedAt: z.string().datetime().optional(),
-});
 
 const ingestEventSchema = z.object({
   type: z.enum(EVENT_TYPES),
@@ -40,6 +35,13 @@ const optionalNumber = z.preprocess(
   (value) => (value === null || value === '' ? undefined : value),
   z.coerce.number().positive().optional()
 );
+
+const startPourSchema = z.object({
+  name: z.string().trim().min(1),
+  expectedYardage: z.number().positive(),
+  startedAt: z.string().datetime().optional(),
+  supplierOrderNumber: optionalText,
+});
 
 const createTicketSchema = z
   .object({
@@ -96,6 +98,7 @@ export async function registerRoutes(app: FastifyInstance) {
       name: input.name,
       expectedYardage: input.expectedYardage,
       startedAt: input.startedAt,
+      supplierOrderNumber: input.supplierOrderNumber,
     });
     await attachRecentUnassignedTicketsToPour(pour.id);
 
@@ -151,6 +154,16 @@ export async function registerRoutes(app: FastifyInstance) {
     const tickets = await listTicketsForPour(activePour.id);
 
     return tickets.map(serializeTruckingTicket);
+  });
+
+  app.get('/api/pours/active/supplier-order', async () => {
+    const activePour = await getActivePourRecord();
+
+    if (!activePour) {
+      return null;
+    }
+
+    return getSupplierOrderForPour(activePour);
   });
 
   app.get('/api/pours/active/summary', async () => {

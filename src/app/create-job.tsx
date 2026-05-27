@@ -8,6 +8,8 @@ import { ThemedText } from "@/components/themed-text";
 import { Colors, Spacing } from "@/constants/theme";
 import { startPour } from "@/lib/api";
 
+const DEMO_SUPPLIER_ORDER_NUMBER = "RM-24817";
+
 export default function CreateJobScreen() {
   const [jobName, setJobName] = useState("");
   const [expectedYardage, setExpectedYardage] = useState("");
@@ -38,6 +40,7 @@ export default function CreateJobScreen() {
     await startPour({
       name: trimmedName,
       expectedYardage: parsedYardage,
+      supplierOrderNumber: DEMO_SUPPLIER_ORDER_NUMBER,
     });
 
     router.replace("/live");
@@ -85,6 +88,18 @@ export default function CreateJobScreen() {
               keyboardType="decimal-pad"
               placeholder="Cubic Yards"
               placeholderTextColor={Colors.light.textSecondary}
+              style={styles.input}
+            />
+          </View>
+
+          <View style={styles.fieldGroup}>
+            <ThemedText type="smallBold">Supplier Order #</ThemedText>
+            <TextInput
+              value={DEMO_SUPPLIER_ORDER_NUMBER}
+              editable={false}
+              selectTextOnFocus={false}
+              placeholderTextColor={Colors.light.textSecondary}
+              autoCapitalize="characters"
               style={styles.input}
             />
           </View>

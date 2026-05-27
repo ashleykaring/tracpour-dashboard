@@ -52,6 +52,7 @@ Likely API-facing methods already represented in the frontend:
 - `getLoadsForActivePour()`
 - `getPourActivity()`
 - `getTicketsForActivePour()`
+- `getSupplierOrderForActivePour()`
 - `getDashboardSummary()`
 
 ## Backend
