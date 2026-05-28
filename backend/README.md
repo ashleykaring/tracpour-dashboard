@@ -35,6 +35,7 @@ Do not expose `SUPABASE_SERVICE_ROLE_KEY` in the frontend. It belongs only in th
 - `GET /api/pours/active/loads`
 - `GET /api/pours/active/activity`
 - `GET /api/pours/active/tickets`
+- `GET /api/pours/active/tickets.xlsx`
 - `GET /api/pours/active/supplier-order`
 - `GET /api/pours/active/summary`
 - `POST /api/tickets`
@@ -113,6 +114,7 @@ Behavior:
 - `quant` is normalized to `yardage`; `truck` is normalized to `truckLabel`.
 - Tickets are stored separately from loads because truck events currently do not include a truck ID.
 - Re-posting the same `ticketNumber` or `downloadUrl` for the same pour updates the existing ticket record.
+- `GET /api/pours/active/tickets.xlsx` downloads the current active pour's stored tickets as an Excel workbook.
 
 ## Railway
 
