@@ -13,6 +13,7 @@ import {
   listTicketsForPour,
 } from './services/pours';
 import { getSupplierOrderForPour } from './services/supplier-orders';
+import { buildTicketsWorkbook } from './services/ticket-export';
 import { attachRecentUnassignedTicketsToPour, createOrUpdateTicket } from './services/tickets';
 import {
   serializeActivityEvent,
@@ -162,6 +163,25 @@ export async function registerRoutes(app: FastifyInstance) {
     const tickets = await listTicketsForPour(activePour.id);
 
     return tickets.map(serializeTruckingTicket);
+  });
+
+  app.get('/api/pours/active/tickets.xlsx', async (_request, reply) => {
+    const activePour = await getActivePourRecord();
+
+    if (!activePour) {
+      return reply.code(404).send({
+        error: 'NO_ACTIVE_POUR',
+        message: 'There is no active pour to export tickets for.',
+      });
+    }
+
+    const tickets = await listTicketsForPour(activePour.id);
+    const exportFile = await buildTicketsWorkbook(activePour, tickets);
+
+    return reply
+      .header('Content-Type', exportFile.contentType)
+      .header('Content-Disposition', `attachment; filename="${exportFile.filename}"`)
+      .send(exportFile.buffer);
   });
 
   app.get('/api/pours/active/supplier-order', async () => {

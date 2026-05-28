@@ -142,6 +142,14 @@ export async function getTicketsForActivePour(): Promise<TruckingTicket[]> {
   return delay(await getMockTicketsForActivePour());
 }
 
+export function getActivePourTicketsExportUrl() {
+  if (!shouldUseBackend() || !API_BASE_URL) {
+    return null;
+  }
+
+  return `${API_BASE_URL}/api/pours/active/tickets.xlsx`;
+}
+
 export async function getSupplierOrderForActivePour(): Promise<SupplierOrder | null> {
   if (shouldUseBackend()) {
     return requestFromBackend<SupplierOrder | null>('/api/pours/active/supplier-order');
