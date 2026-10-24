@@ -4,6 +4,7 @@ import { Alert, Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import { EmptyState } from '@/components/empty-state';
 import { LoadingState } from '@/components/loading-state';
+import { RequestError } from '@/components/request-error';
 import { Screen } from '@/components/screen';
 import { SectionHeader } from '@/components/section-header';
 import { SurfaceCard } from '@/components/surface-card';
@@ -14,7 +15,7 @@ import { useDashboardData } from '@/hooks/use-dashboard-data';
 import { getActivePourTicketsExportUrl } from '@/lib/api';
 
 export default function TicketsScreen() {
-  const { job, isLoading, tickets } = useDashboardData();
+  const { job, isLoading, tickets, error, retry, isRefreshing } = useDashboardData();
   const ticketsExportUrl = useMemo(() => getActivePourTicketsExportUrl(), []);
 
   const sortedTickets = useMemo(
@@ -73,7 +74,9 @@ export default function TicketsScreen() {
         ) : null}
       </View>
 
-      {isLoading ? (
+      {error ? <RequestError message={error} onRetry={retry} isRetrying={isRefreshing} /> : null}
+
+      {error && !job ? null : isLoading ? (
         <LoadingState label="Loading ticket records..." />
       ) : (
         <>

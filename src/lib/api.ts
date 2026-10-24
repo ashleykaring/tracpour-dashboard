@@ -20,6 +20,7 @@ import type {
 } from './types';
 
 const MOCK_DELAY_MS = 350;
+const REQUEST_TIMEOUT_MS = 15000;
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, '');
 const USE_BACKEND_OVERRIDE = process.env.EXPO_PUBLIC_USE_BACKEND;
 
@@ -54,7 +55,7 @@ function isLocalHostname(hostname: string) {
 }
 
 function isLocalRuntime() {
-  if (typeof window === 'undefined') {
+  if (typeof window === 'undefined' || !window.location) {
     return true;
   }
 
@@ -70,28 +71,51 @@ function getApiBaseUrl() {
 }
 
 function assertMockDataAllowed() {
-  if (USE_BACKEND_OVERRIDE === 'false' || isLocalRuntime()) {
+  if (isLocalRuntime()) {
     return;
   }
 
-  throw new Error('Backend API URL is not configured. Refusing to use mock data on a deployed web app.');
+  throw new Error('Configure EXPO_PUBLIC_API_BASE_URL and enable backend mode. Mock data is only available on local web hosts.');
 }
 
 async function requestFromBackend<T>(path: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${getApiBaseUrl()}${path}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-    ...options,
-  });
+  const url = `${getApiBaseUrl()}${path}`;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || `Backend request failed with ${response.status}`);
+  try {
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...options?.headers,
+        },
+        signal: controller.signal,
+      });
+    } catch {
+      throw new Error(controller.signal.aborted
+        ? 'The backend took too long to respond. Please try again.'
+        : 'Unable to reach the backend. Check your connection and try again.');
+    }
+
+    if (!response.ok) {
+      const body = await response.text();
+      let message = body || `Backend request failed with ${response.status}`;
+      try {
+        const parsed = JSON.parse(body);
+        message = parsed.message || parsed.error || message;
+      } catch {
+        // Plain text errors are also supported.
+      }
+      throw new Error(message);
+    }
+
+    return (await response.json()) as T;
+  } finally {
+    clearTimeout(timeout);
   }
-
-  return (await response.json()) as T;
 }
 
 export async function getActivePour(): Promise<Job | null> {

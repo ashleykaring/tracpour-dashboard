@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { Alert, Pressable, StyleSheet, TextInput, View } from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { SurfaceCard } from "@/components/surface-card";
@@ -8,9 +8,6 @@ import { ThemedText } from "@/components/themed-text";
 import { Colors, Spacing } from "@/constants/theme";
 import { getActivePour, startPour } from "@/lib/api";
 
-const DEMO_JOB_NAME = "Riverside Bridge";
-const DEMO_EXPECTED_YARDAGE = 320;
-const DEMO_SUPPLIER_ORDER_NUMBER = "RM-24817";
 const SUPPLIER_PLANT_OPTIONS = [
   {
     supplierPlantId: "calportland-demo",
@@ -37,9 +34,18 @@ const SUPPLIER_PLANT_OPTIONS = [
     supplierPlatform: "manual",
   },
 ] as const;
-const DEMO_SUPPLIER_PLANT = SUPPLIER_PLANT_OPTIONS[0];
+type SupplierPlantOption = (typeof SUPPLIER_PLANT_OPTIONS)[number];
 
 export default function CreateJobScreen() {
+  const [jobName, setJobName] = useState("");
+  const [expectedYardage, setExpectedYardage] = useState("");
+  const [supplierOrderNumber, setSupplierOrderNumber] = useState("");
+  const [selectedSupplierPlant, setSelectedSupplierPlant] = useState<SupplierPlantOption>(
+    SUPPLIER_PLANT_OPTIONS[0],
+  );
+  const [isSupplierPickerVisible, setIsSupplierPickerVisible] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [hasActivePour, setHasActivePour] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   async function handleStartJob() {
@@ -47,28 +53,45 @@ export default function CreateJobScreen() {
       return;
     }
 
+    const trimmedName = jobName.trim();
+    const parsedYardage = Number(expectedYardage);
+
+    if (!trimmedName) {
+      setError("Enter a job name before starting the pour.");
+      return;
+    }
+
+    if (!Number.isFinite(parsedYardage) || parsedYardage <= 0) {
+      setError("Enter an expected yardage greater than zero.");
+      return;
+    }
+
+    setError(null);
+    setHasActivePour(false);
     setIsSaving(true);
 
     try {
       const activePour = await getActivePour();
 
-      if (!activePour) {
-        await startPour({
-          name: DEMO_JOB_NAME,
-          expectedYardage: DEMO_EXPECTED_YARDAGE,
-          supplierOrderNumber: DEMO_SUPPLIER_ORDER_NUMBER,
-          supplierPlantId: DEMO_SUPPLIER_PLANT.supplierPlantId,
-          supplierPlantName: DEMO_SUPPLIER_PLANT.supplierPlantName,
-          supplierName: DEMO_SUPPLIER_PLANT.supplierName,
-          supplierPlatform: DEMO_SUPPLIER_PLANT.supplierPlatform,
-        });
+      if (activePour) {
+        setHasActivePour(true);
+        setError("A pour is already active. End it before starting another one.");
+        return;
       }
+
+      await startPour({
+        name: trimmedName,
+        expectedYardage: parsedYardage,
+        supplierOrderNumber: supplierOrderNumber.trim() || undefined,
+        supplierPlantId: selectedSupplierPlant.supplierPlantId,
+        supplierPlantName: selectedSupplierPlant.supplierPlantName,
+        supplierName: selectedSupplierPlant.supplierName,
+        supplierPlatform: selectedSupplierPlant.supplierPlatform,
+      });
 
       router.replace("/live");
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unable to start demo pour.";
-      Alert.alert("Could not start pour", message);
+      setError(error instanceof Error ? error.message : "Unable to start pour.");
     } finally {
       setIsSaving(false);
     }
@@ -76,7 +99,7 @@ export default function CreateJobScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <ThemedText type="eyebrow">Start Pour</ThemedText>
           <ThemedText type="screenTitle" style={styles.title}>
@@ -100,9 +123,11 @@ export default function CreateJobScreen() {
           <View style={styles.fieldGroup}>
             <ThemedText type="smallBold">Job / Pour Name</ThemedText>
             <TextInput
-              value={DEMO_JOB_NAME}
-              editable={false}
-              selectTextOnFocus={false}
+              accessibilityLabel="Job / Pour Name"
+              value={jobName}
+              onChangeText={setJobName}
+              editable={!isSaving}
+              placeholder="Name / Description"
               placeholderTextColor={Colors.light.textSecondary}
               style={styles.input}
             />
@@ -111,9 +136,11 @@ export default function CreateJobScreen() {
           <View style={styles.fieldGroup}>
             <ThemedText type="smallBold">Expected Yardage (CY)</ThemedText>
             <TextInput
-              value={`${DEMO_EXPECTED_YARDAGE}`}
-              editable={false}
-              selectTextOnFocus={false}
+              accessibilityLabel="Expected Yardage (CY)"
+              value={expectedYardage}
+              onChangeText={setExpectedYardage}
+              editable={!isSaving}
+              placeholder="Cubic Yards"
               keyboardType="decimal-pad"
               placeholderTextColor={Colors.light.textSecondary}
               style={styles.input}
@@ -122,28 +149,43 @@ export default function CreateJobScreen() {
 
           <View style={styles.fieldGroup}>
             <ThemedText type="smallBold">Ready-Mix Supplier / Batch Plant</ThemedText>
-            <TextInput
-              value={DEMO_SUPPLIER_PLANT.supplierPlantName}
-              editable={false}
-              selectTextOnFocus={false}
-              placeholderTextColor={Colors.light.textSecondary}
-              style={styles.input}
-            />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Select ready-mix supplier or batch plant"
+              disabled={isSaving}
+              onPress={() => setIsSupplierPickerVisible(true)}
+              style={styles.selectButton}
+            >
+              <ThemedText>{selectedSupplierPlant.supplierPlantName}</ThemedText>
+              <ThemedText themeColor="textSecondary">Select</ThemedText>
+            </Pressable>
           </View>
 
           <View style={styles.fieldGroup}>
             <ThemedText type="smallBold">Supplier Order #</ThemedText>
             <TextInput
-              value={DEMO_SUPPLIER_ORDER_NUMBER}
-              editable={false}
-              selectTextOnFocus={false}
+              accessibilityLabel="Supplier Order Number"
+              value={supplierOrderNumber}
+              onChangeText={setSupplierOrderNumber}
+              editable={!isSaving}
+              placeholder="Optional order number"
               placeholderTextColor={Colors.light.textSecondary}
               autoCapitalize="characters"
               style={styles.input}
             />
           </View>
 
+          {error ? (
+            <ThemedText accessibilityRole="alert" style={styles.error}>{error}</ThemedText>
+          ) : null}
+          {hasActivePour ? (
+            <Pressable accessibilityRole="button" onPress={() => router.replace("/live")}>
+              <ThemedText type="smallBold">Return to active pour</ThemedText>
+            </Pressable>
+          ) : null}
+
           <Pressable
+            accessibilityRole="button"
             onPress={() => void handleStartJob()}
             disabled={isSaving}
             style={({ pressed }) => [
@@ -157,7 +199,42 @@ export default function CreateJobScreen() {
             </ThemedText>
           </Pressable>
         </SurfaceCard>
-      </View>
+      </ScrollView>
+      <Modal
+        animationType="fade"
+        transparent
+        visible={isSupplierPickerVisible}
+        onRequestClose={() => setIsSupplierPickerVisible(false)}
+      >
+        <View style={styles.modalRoot}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Close supplier plant selector"
+            style={styles.modalBackdrop}
+            onPress={() => setIsSupplierPickerVisible(false)}
+          />
+          <SurfaceCard style={styles.pickerPanel}>
+            <ThemedText type="sectionTitle">Ready-Mix Supplier / Batch Plant</ThemedText>
+            {SUPPLIER_PLANT_OPTIONS.map((option) => (
+              <Pressable
+                key={option.supplierPlantId}
+                accessibilityRole="button"
+                accessibilityState={{ selected: option.supplierPlantId === selectedSupplierPlant.supplierPlantId }}
+                onPress={() => {
+                  setSelectedSupplierPlant(option);
+                  setIsSupplierPickerVisible(false);
+                }}
+                style={[
+                  styles.optionButton,
+                  option.supplierPlantId === selectedSupplierPlant.supplierPlantId && styles.optionSelected,
+                ]}
+              >
+                <ThemedText type="smallBold">{option.supplierPlantName}</ThemedText>
+              </Pressable>
+            ))}
+          </SurfaceCard>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -168,13 +245,14 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.light.background,
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     width: "100%",
     maxWidth: 800,
     alignSelf: "center",
     justifyContent: "center",
     paddingHorizontal: Spacing.three,
     paddingTop: Spacing.five,
+    paddingBottom: Spacing.five,
     gap: Spacing.three,
   },
   header: {
@@ -202,6 +280,44 @@ const styles = StyleSheet.create({
     color: Colors.light.text,
     fontSize: 16,
     fontWeight: "500",
+  },
+  selectButton: {
+    minHeight: 52,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Colors.light.cardBorder,
+    paddingHorizontal: Spacing.three,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: Spacing.two,
+  },
+  error: {
+    color: "#B42318",
+  },
+  modalRoot: {
+    flex: 1,
+    justifyContent: "center",
+    padding: Spacing.three,
+  },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(17,33,45,0.58)",
+  },
+  pickerPanel: {
+    width: "100%",
+    maxWidth: 420,
+    alignSelf: "center",
+    gap: Spacing.two,
+  },
+  optionButton: {
+    minHeight: 48,
+    justifyContent: "center",
+    padding: Spacing.three,
+    borderRadius: 16,
+  },
+  optionSelected: {
+    backgroundColor: Colors.light.backgroundSelected,
   },
   button: {
     minHeight: 52,
