@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { EmptyState } from '@/components/empty-state';
+import AppTabs from '@/components/app-tabs';
 import { LoadingState } from '@/components/loading-state';
 import { RequestError } from '@/components/request-error';
 import { Screen } from '@/components/screen';
@@ -13,6 +14,10 @@ import { Spacing } from '@/constants/theme';
 import { useDashboardData } from '@/hooks/use-dashboard-data';
 
 export default function HistoryScreen() {
+  return <AppTabs><HistoryContent /></AppTabs>;
+}
+
+function HistoryContent() {
   const { job, activity, isLoading, error, retry, isRefreshing } = useDashboardData();
 
   const activityEvents = useMemo(

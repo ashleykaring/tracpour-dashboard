@@ -1,80 +1,44 @@
-## TracPour Dashboard MVP
+## TracPour Dashboard
 
-Expo / React Native app for tracking one active concrete pour at a time. The frontend calls the Fastify backend in `backend/`, which persists pours, loads, engine activity, trucking tickets, and raw events in Supabase Postgres. Command Alkon-style supplier order data remains mocked, including when connected to the backend.
+Expo / React Native app for tracking concrete pours. The current transition uses Supabase Auth, a user-owned PostgreSQL schema with RLS, and an authenticated Supabase Edge Function for dashboard operations. Each user can have one active pour. Supplier order information is still mocked.
 
-## Run locally
+## Set up the Supabase project
 
-Set up the backend first:
+Use a new, empty Supabase project. Enable the Data API and RLS for new tables; leave automatic API grants for new tables off. In the SQL Editor, run these files in order:
 
-1. Create or use an existing Supabase project and apply `backend/supabase/schema.sql`.
-2. Copy `backend/.env.example` to `backend/.env` and populate `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
-3. Start the backend in its own terminal:
+1. `backend/supabase/user_owned_schema.sql`
+2. `backend/supabase/phase3_dashboard.sql`
+
+The schema is a clean installation, not a migration for the old database. If the first file has already been run, run only the second. Test the SQL in a disposable project using `backend/supabase/tests/user_owned_schema.sql` and `backend/supabase/tests/phase3_dashboard.sql`. Both test scripts roll back their fixtures.
+
+Deploy the `dashboard` function from the repository root using the Supabase CLI. Replace `YOUR_PROJECT_REF` with the project reference from the Supabase dashboard:
 
 ```bash
-cd backend
+npx supabase login
+npx supabase functions deploy dashboard --project-ref YOUR_PROJECT_REF --workdir backend --use-api
+```
+
+Use `--use-api` to deploy without local Docker. Leave JWT verification enabled. The Edge Function uses the caller's verified session and a user-scoped database client. It does not use a service-role key. It includes authenticated ticket creation, but the old unauthenticated external ticket endpoint is not supported; a separate integration authentication method is still needed for external processors.
+
+In Supabase Authentication URL Configuration, set the Site URL to the app's web origin and add the web origin and `reset-password` URL to the redirect allow list (for local web, usually `http://localhost:8081` and `http://localhost:8081/reset-password`). Add `tracpourdash://**` for native development/production builds. Expo Go may use a different `exp://` URL; allow the actual development URL when testing it. Add the deployed web URL before production. Email confirmation and password recovery require allowed redirects that match the running app. Production email delivery may require an SMTP provider in Supabase.
+
+## Run the app
+
+Copy the new project's URL and publishable key (or legacy `anon` key) into `.env.local` in the repository root:
+
+```bash
+EXPO_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
+```
+
+Never put a Supabase secret or service-role key in an `EXPO_PUBLIC_` variable; those values are bundled into the app. Restart Expo after changing the environment. Native sessions use AsyncStorage and web sessions use browser storage.
+
+```bash
 npm install
-npm run dev
+npx expo start --web
 ```
 
-Keep the Supabase service-role key in the backend only. See [backend/README.md](backend/README.md) for the API and ingestion payloads.
-
-Create `.env.local` at the repository root:
-
-```bash
-EXPO_PUBLIC_USE_BACKEND=true
-EXPO_PUBLIC_API_BASE_URL=http://localhost:4000
-```
-
-Then start the frontend from the repository root:
-
-```bash
-npm install
-npx expo start
-```
-
-When testing on a physical device, use the computer's LAN IP instead of `localhost`. Restart Expo after changing environment variables.
-
-## App flow
-
-- Startup checks the backend for an active pour and opens either setup or the live dashboard.
-- Setup accepts a job name, positive expected yardage, a supplier selection, and an optional supplier order number. The supplier choices are placeholders for the retained supplier mocks.
-- Starting a pour saves the entered details in Supabase. Real pours start without seeded loads or activity. An existing active pour must be completed before another can start.
-- The live, tickets, and history tabs refresh every 10 seconds. Failed requests show an error and retry control; a failed refresh keeps the last successfully loaded data visible.
-- The Pi or bridge posts truck and engine events to `POST /api/events`. A separate ticket processor posts ticket data to `POST /api/tickets`.
-- Tickets can be opened individually or exported to Excel while the pour is active.
-- End Pour asks for confirmation, completes the pour through the API, and returns to setup only after completion succeeds.
-
-## Data layer
-
-- `src/lib/api.ts`: frontend API boundary for pour creation/completion, loads, activity, tickets, supplier orders, and summary data. Backend requests time out after 15 seconds and do not fall back to mock data on failure.
-- `src/hooks/use-dashboard-data.ts`: polling, request-error handling, and derived dashboard metrics.
-- `src/lib/dashboard.ts`: yardage and truck-count calculations.
-- `src/lib/types.ts`: frontend domain types.
-- `backend/src/routes.ts`: app API, event ingestion, ticket ingestion, and Excel export.
-- `backend/src/services/`: database operations and event processing.
-- `backend/supabase/schema.sql`: database tables and schema updates.
-- `src/lib/mock-data.ts`: separate AsyncStorage-backed fixtures for local mock-only testing.
-
-To intentionally use local mock-only mode, set `EXPO_PUBLIC_USE_BACKEND=false`. Alternatively, remove both frontend environment variables. Leaving `EXPO_PUBLIC_USE_BACKEND=true` without an API URL produces a configuration error. Mock-only mode seeds example loads, activity, and tickets and keeps them in local storage; it does not write to Supabase or support Excel export. Deployed web hosts reject mock-only mode.
-
-## Supplier data and current limitations
-
-Supplier order figures remain intentionally mocked. The existing Command Alkon-style and CEMEX Go-style placeholders return fixed quantities, mix design, truck counts, and ETA when a supplier plant and order number are supplied. Their mock labels do not represent live supplier connections. The mock `lastSyncedAt` value is generated when requested.
-
-Truck-based yardage uses a default of 9.5 CY per completed load. Ticket quantities are stored separately and do not update load totals. Event processing uses server receipt time rather than the supplied event timestamp. History shows the active pour's engine events; completed-pour browsing is not implemented. The backend currently has no application authentication.
-
-## Deployment
-
-Deploy the Expo frontend from the repository root and the backend from `backend/`. For example, Vercel can host the static frontend and Railway can run the backend.
-
-Set the frontend build environment to:
-
-```bash
-EXPO_PUBLIC_USE_BACKEND=true
-EXPO_PUBLIC_API_BASE_URL=https://your-backend-host
-```
-
-Rebuild/redeploy the frontend after changing these values. Set `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and the platform's `PORT` in the backend environment, and apply the database schema. Point the Pi/bridge and ticket processor at the deployed backend's ingestion endpoints. `GET /health` checks that the HTTP service is running; it does not verify database connectivity.
+After signing in, create and complete a pour. Another user should see only their own pours, tickets, and dashboard data. Ticket export downloads an authenticated Excel workbook on web or opens the native sharing sheet. The device provisioning and Pi event ingestion phases are not implemented yet, so new loads and activity will not arrive automatically.
 
 ## Verification
 
@@ -82,7 +46,11 @@ Rebuild/redeploy the frontend after changing these values. Set `SUPABASE_URL`, `
 npx tsc --noEmit
 npm run lint
 cd backend
-npm run build
+npm run test:dashboard
 ```
 
-For a full-stack smoke check against a test database, create a pour with custom details, ingest truck and engine events and a ticket, verify the dashboard/history/tickets and Excel export, then end the pour and create a second pour. Also stop the backend temporarily to check visible errors and recovery using Retry.
+The dashboard test uses a simulated user-scoped database; the SQL tests must also be run against a disposable Supabase database to verify actual RLS and database constraints. Test the deployed function with two real accounts, including sign-out, account switching, pour creation/completion, and Excel export. Test password recovery and mobile sharing/deep links on their target platforms.
+
+## Legacy backend
+
+`backend/src` and `backend/supabase/schema.sql` are the old unauthenticated Railway MVP, kept as reference while the replacement is built. Do not connect the new app to that backend or use its service-role key in the app. The old Pi and ticket endpoints do not use per-user ownership and must not be treated as part of the new Supabase setup. See `backend/README.md` for legacy endpoint details.

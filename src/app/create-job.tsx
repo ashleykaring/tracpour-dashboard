@@ -4,6 +4,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from "react
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { SurfaceCard } from "@/components/surface-card";
+import { AccountMenu } from "@/components/account-menu";
 import { ThemedText } from "@/components/themed-text";
 import { Colors, Spacing } from "@/constants/theme";
 import { getActivePour, startPour } from "@/lib/api";
@@ -99,6 +100,9 @@ export default function CreateJobScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <View style={styles.accountBar}>
+        <AccountMenu />
+      </View>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <ThemedText type="eyebrow">Start Pour</ThemedText>
@@ -243,6 +247,14 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: Colors.light.background,
+  },
+  accountBar: {
+    width: "100%",
+    maxWidth: 800,
+    alignSelf: "center",
+    alignItems: "flex-end",
+    paddingHorizontal: Spacing.three,
+    paddingTop: Spacing.two,
   },
   content: {
     flexGrow: 1,

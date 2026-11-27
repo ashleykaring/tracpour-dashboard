@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Alert, Platform, Pressable, StyleSheet, View } from "react-native";
 
 import { EmptyState } from "@/components/empty-state";
+import AppTabs from "@/components/app-tabs";
 import { JobHeader } from "@/components/job-header";
 import { LoadRow } from "@/components/load-row";
 import { LoadingState } from "@/components/loading-state";
@@ -21,6 +22,10 @@ import { completeActivePour } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
 
 export default function LiveScreen() {
+  return <AppTabs><LiveContent /></AppTabs>;
+}
+
+function LiveContent() {
   const { job, isLoading, metrics, loads, supplierOrder, error, retry, isRefreshing } = useDashboardData();
   const [isEndingPour, setIsEndingPour] = useState(false);
   const [completionError, setCompletionError] = useState<string | null>(null);

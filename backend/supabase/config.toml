@@ -1,0 +1,4 @@
+project_id = "tracpour"
+
+[functions.dashboard]
+verify_jwt = true
