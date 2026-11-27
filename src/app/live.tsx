@@ -1,13 +1,15 @@
 import { router } from "expo-router";
-import { useMemo } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { useMemo, useState } from "react";
+import { Alert, Platform, Pressable, StyleSheet, View } from "react-native";
 
 import { EmptyState } from "@/components/empty-state";
+import AppTabs from "@/components/app-tabs";
 import { JobHeader } from "@/components/job-header";
 import { LoadRow } from "@/components/load-row";
 import { LoadingState } from "@/components/loading-state";
 import { MetricCard } from "@/components/metric-card";
 import { ProgressCard } from "@/components/progress-card";
+import { RequestError } from "@/components/request-error";
 import { Screen } from "@/components/screen";
 import { SectionHeader } from "@/components/section-header";
 import { StatGrid } from "@/components/stat-grid";
@@ -16,10 +18,17 @@ import { SupplierOrderCard } from "@/components/supplier-order-card";
 import { ThemedText } from "@/components/themed-text";
 import { Colors, Spacing } from "@/constants/theme";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
+import { completeActivePour } from "@/lib/api";
 import { formatDateTime } from "@/lib/format";
 
 export default function LiveScreen() {
-  const { job, isLoading, metrics, loads, supplierOrder } = useDashboardData();
+  return <AppTabs><LiveContent /></AppTabs>;
+}
+
+function LiveContent() {
+  const { job, isLoading, metrics, loads, supplierOrder, error, retry, isRefreshing } = useDashboardData();
+  const [isEndingPour, setIsEndingPour] = useState(false);
+  const [completionError, setCompletionError] = useState<string | null>(null);
 
   const recentLoads = useMemo(
     () =>
@@ -42,6 +51,14 @@ export default function LiveScreen() {
     [loads],
   );
 
+  if (error && !job) {
+    return (
+      <Screen>
+        <RequestError message={error} onRetry={retry} isRetrying={isRefreshing} />
+      </Screen>
+    );
+  }
+
   if (!isLoading && !job) {
     return (
       <Screen scrollable>
@@ -60,13 +77,42 @@ export default function LiveScreen() {
     );
   }
 
+  async function endPour() {
+    if (isEndingPour) {
+      return;
+    }
+
+    setIsEndingPour(true);
+    setCompletionError(null);
+
+    try {
+      await completeActivePour();
+      router.replace("/create-job");
+    } catch (error) {
+      setCompletionError(error instanceof Error ? error.message : "Unable to end pour.");
+    } finally {
+      setIsEndingPour(false);
+    }
+  }
+
   function handleEndPour() {
-    router.replace("/create-job");
+    if (Platform.OS === "web") {
+      if (window.confirm("End this pour and return to setup?")) {
+        void endPour();
+      }
+      return;
+    }
+
+    Alert.alert("End pour?", "This will complete the active pour and return to setup.", [
+      { text: "Cancel", style: "cancel" },
+      { text: "End Pour", style: "destructive", onPress: () => void endPour() },
+    ]);
   }
 
   return (
     <Screen scrollable>
       <JobHeader job={job} />
+      {error ? <RequestError message={error} onRetry={retry} isRetrying={isRefreshing} /> : null}
 
       {isLoading || !job || !metrics ? (
         <LoadingState label="Loading live pour dashboard..." />
@@ -122,16 +168,22 @@ export default function LiveScreen() {
           </SurfaceCard>
 
           <Pressable
+            accessibilityRole="button"
             onPress={handleEndPour}
+            disabled={isEndingPour}
             style={({ pressed }) => [
               styles.secondaryButton,
               pressed && styles.pressed,
+              isEndingPour && styles.disabled,
             ]}
           >
             <ThemedButtonText color="#B42318">
-              End Pour
+              {isEndingPour ? "Ending Pour..." : "End Pour"}
             </ThemedButtonText>
           </Pressable>
+          {completionError ? (
+            <ThemedText accessibilityRole="alert" style={{ color: "#B42318" }}>{completionError}</ThemedText>
+          ) : null}
         </>
       )}
     </Screen>

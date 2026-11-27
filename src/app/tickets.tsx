@@ -1,9 +1,11 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useMemo } from 'react';
-import { Alert, Linking, Pressable, StyleSheet, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { EmptyState } from '@/components/empty-state';
+import AppTabs from '@/components/app-tabs';
 import { LoadingState } from '@/components/loading-state';
+import { RequestError } from '@/components/request-error';
 import { Screen } from '@/components/screen';
 import { SectionHeader } from '@/components/section-header';
 import { SurfaceCard } from '@/components/surface-card';
@@ -11,11 +13,16 @@ import { TicketRow } from '@/components/ticket-row';
 import { ThemedText } from '@/components/themed-text';
 import { Colors, Spacing } from '@/constants/theme';
 import { useDashboardData } from '@/hooks/use-dashboard-data';
-import { getActivePourTicketsExportUrl } from '@/lib/api';
+import { exportActivePourTickets } from '@/lib/export-tickets';
 
 export default function TicketsScreen() {
-  const { job, isLoading, tickets } = useDashboardData();
-  const ticketsExportUrl = useMemo(() => getActivePourTicketsExportUrl(), []);
+  return <AppTabs><TicketsContent /></AppTabs>;
+}
+
+function TicketsContent() {
+  const { job, isLoading, tickets, error, retry, isRefreshing } = useDashboardData();
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   const sortedTickets = useMemo(
     () =>
@@ -32,18 +39,18 @@ export default function TicketsScreen() {
     () => sortedTickets.filter((ticket) => ticket.downloadUrl).length,
     [sortedTickets]
   );
-  const canExportTickets = Boolean(job && ticketsExportUrl);
+  const canExportTickets = Boolean(job);
 
   async function handleExportTickets() {
-    if (!ticketsExportUrl) {
-      Alert.alert('Export unavailable', 'Ticket export is only available when connected to the backend.');
-      return;
-    }
-
+    if (exporting) return;
+    setExportError(null);
+    setExporting(true);
     try {
-      await Linking.openURL(ticketsExportUrl);
-    } catch {
-      Alert.alert('Export failed', 'Unable to open the ticket export.');
+      await exportActivePourTickets();
+    } catch (err) {
+      setExportError(err instanceof Error ? err.message : 'Unable to export tickets.');
+    } finally {
+      setExporting(false);
     }
   }
 
@@ -62,18 +69,22 @@ export default function TicketsScreen() {
               accessibilityRole="button"
               accessibilityLabel="Export tickets to Excel"
               onPress={handleExportTickets}
+              disabled={exporting}
               style={({ pressed }) => [styles.exportButton, pressed && styles.pressed]}
             >
               <MaterialCommunityIcons name="file-excel-outline" size={18} color={Colors.light.navText} />
               <ThemedText type="smallBold" style={styles.exportButtonText}>
-                Export
+                {exporting ? 'Exporting…' : 'Export'}
               </ThemedText>
             </Pressable>
           </View>
         ) : null}
       </View>
 
-      {isLoading ? (
+      {error ? <RequestError message={error} onRetry={retry} isRetrying={isRefreshing} /> : null}
+      {exportError ? <ThemedText accessibilityRole="alert">{exportError}</ThemedText> : null}
+
+      {error && !job ? null : isLoading ? (
         <LoadingState label="Loading ticket records..." />
       ) : (
         <>

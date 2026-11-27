@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   getActivePour,
@@ -19,36 +19,56 @@ export function useDashboardData() {
   const [tickets, setTickets] = useState<TruckingTicket[]>([]);
   const [supplierOrder, setSupplierOrder] = useState<SupplierOrder | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [retryAttempt, setRetryAttempt] = useState(0);
+  const retry = useCallback(() => setRetryAttempt((attempt) => attempt + 1), []);
 
   useEffect(() => {
     let isMounted = true;
+    let isFetching = false;
 
-    async function loadDashboard(showLoading = false) {
-      if (showLoading) {
-        setIsLoading(true);
-      }
-
-      const [activeJob, activeLoads, pourActivity, truckingTickets, activeSupplierOrder] = await Promise.all([
-        getActivePour(),
-        getLoadsForActivePour(),
-        getPourActivity(),
-        getTicketsForActivePour(),
-        getSupplierOrderForActivePour(),
-      ]);
-
-      if (!isMounted) {
+    async function loadDashboard() {
+      if (isFetching) {
         return;
       }
 
-      setJob(activeJob);
-      setLoads(activeLoads);
-      setActivity(pourActivity);
-      setTickets(truckingTickets);
-      setSupplierOrder(activeSupplierOrder);
-      setIsLoading(false);
+      isFetching = true;
+      setIsRefreshing(true);
+
+      try {
+        const [activeJob, activeLoads, pourActivity, truckingTickets, activeSupplierOrder] = await Promise.all([
+          getActivePour(),
+          getLoadsForActivePour(),
+          getPourActivity(),
+          getTicketsForActivePour(),
+          getSupplierOrderForActivePour(),
+        ]);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setJob(activeJob);
+        setLoads(activeLoads);
+        setActivity(pourActivity);
+        setTickets(truckingTickets);
+        setSupplierOrder(activeSupplierOrder);
+        setError(null);
+      } catch (error) {
+        if (isMounted) {
+          setError(error instanceof Error ? error.message : 'Unable to load pour data.');
+        }
+      } finally {
+        isFetching = false;
+        if (isMounted) {
+          setIsLoading(false);
+          setIsRefreshing(false);
+        }
+      }
     }
 
-    void loadDashboard(true);
+    void loadDashboard();
     const refreshInterval = setInterval(() => {
       void loadDashboard();
     }, DASHBOARD_REFRESH_MS);
@@ -57,7 +77,7 @@ export function useDashboardData() {
       isMounted = false;
       clearInterval(refreshInterval);
     };
-  }, []);
+  }, [retryAttempt]);
 
   const metrics = useMemo(() => {
     if (!job) {
@@ -67,5 +87,5 @@ export function useDashboardData() {
     return computeDashboardMetrics(job, loads);
   }, [job, loads]);
 
-  return { job, loads, activity, tickets, supplierOrder, metrics, isLoading };
+  return { job, loads, activity, tickets, supplierOrder, metrics, isLoading, isRefreshing, error, retry };
 }

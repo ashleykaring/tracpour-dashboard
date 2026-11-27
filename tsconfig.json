@@ -14,5 +14,6 @@
   "include": [
     "**/*.ts",
     "**/*.tsx"
-  ]
+  ],
+  "exclude": ["backend/supabase/functions", "backend/supabase/tests/dashboard_auth_test.ts"]
 }

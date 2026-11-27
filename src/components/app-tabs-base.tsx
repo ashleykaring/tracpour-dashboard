@@ -11,6 +11,7 @@ import { useTheme } from "@/hooks/use-theme";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 
 import { ThemedText } from "./themed-text";
+import { AccountMenu } from "./account-menu";
 
 const HEADER_HEIGHT = 108;
 const CONTENT_TOP_GAP = Spacing.two;
@@ -49,7 +50,10 @@ export default function AppTabsBase({ children }: PropsWithChildren) {
               </ThemedText>
             </ThemedText>
 
-            <QrCodeButton />
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <QrCodeButton />
+              <AccountMenu light />
+            </View>
           </View>
 
           <View
@@ -260,7 +264,8 @@ const styles = StyleSheet.create({
   },
   qrButton: {
     flexDirection: "row",
-    minHeight: 30,
+    width: 40,
+    height: 40,
     borderRadius: 10,
     borderWidth: 1,
     alignItems: "center",
@@ -272,7 +277,6 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 5 },
     elevation: 4,
-    marginBottom: 5,
   },
   pressed: {
     opacity: 0.4,
